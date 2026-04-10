@@ -1,0 +1,52 @@
+# Configuration (contient les credentials)
+config.php
+
+# Base de données et fichiers uploadés
+storage/database.sqlite
+storage/files/*
+!storage/files/.gitkeep
+
+# Variables d'environnement
+.env
+.env.*
+
+# Credentials et certificats
+credentials.json
+token.json
+oauth*.json
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Base de données
+*.db
+*.sqlite
+
+# Archives
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+
+# Logs
+*.log
+error_log
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/
+
+# Fichiers de développement
+plan.json
+project-status.json
+security-audit-report.json

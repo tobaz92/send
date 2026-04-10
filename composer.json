@@ -1,0 +1,14 @@
+{
+    "name": "tobaz92/send",
+    "description": "Alternative self-hosted à WeTransfer pour hébergement mutualisé",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo_sqlite": "*",
+        "ext-fileinfo": "*",
+        "ext-zip": "*",
+        "ext-mbstring": "*"
+    },
+    "keywords": ["file-sharing", "wetransfer", "upload", "php", "sqlite", "self-hosted"]
+}

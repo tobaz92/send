@@ -1,0 +1,83 @@
+# Send - Apache Configuration
+# PHP 8.1+ compatible
+
+# Activer le moteur de réécriture
+RewriteEngine On
+RewriteBase /
+
+# Forcer HTTPS en production (adaptez le domaine à votre installation)
+# RewriteCond %{HTTPS} off
+# RewriteCond %{HTTP_HOST} ^send\.example\.com$ [NC]
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ===========================================
+# PROTECTION FICHIERS SENSIBLES (CASE-INSENSITIVE)
+# ===========================================
+
+# Bloquer config.php (toutes variations de casse)
+<FilesMatch "(?i)^config\.php$">
+    Require all denied
+</FilesMatch>
+
+# Bloquer .htaccess et .htpasswd (toutes variations)
+<FilesMatch "(?i)^\.ht">
+    Require all denied
+</FilesMatch>
+
+# Bloquer tous les fichiers JSON sensibles
+<FilesMatch "(?i)\.(json|lock)$">
+    Require all denied
+</FilesMatch>
+
+# Bloquer les fichiers de backup et temporaires
+<FilesMatch "(?i)\.(bak|backup|old|tmp|swp|log|sql|sqlite|db)$">
+    Require all denied
+</FilesMatch>
+
+# Bloquer les fichiers de backup vim/emacs (se terminant par ~)
+<FilesMatch "~$">
+    Require all denied
+</FilesMatch>
+
+# Bloquer les fichiers de configuration
+<FilesMatch "(?i)\.(ini|env|yml|yaml|xml|conf)$">
+    Require all denied
+</FilesMatch>
+
+# ===========================================
+# PROTECTION DOSSIERS SENSIBLES (CASE-INSENSITIVE)
+# ===========================================
+
+# Bloquer l'accès aux dossiers src et storage (avec flag NC = No Case)
+RewriteRule ^src(/|$) - [F,L,NC]
+RewriteRule ^storage(/|$) - [F,L,NC]
+
+# Bloquer l'accès aux fichiers PHP à la racine (sauf index.php)
+RewriteCond %{REQUEST_URI} !^/index\.php$ [NC]
+RewriteRule ^[^/]+\.php$ - [F,L,NC]
+
+# ===========================================
+# ROUTES AUTORISÉES
+# ===========================================
+
+# Autoriser les assets statiques
+RewriteRule ^public/assets/(.*)$ public/assets/$1 [L]
+
+# Router principal - tout passe par index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Headers de sécurité définis dans bootstrap.php (éviter les doublons)
+
+# Désactiver le listing des répertoires
+Options -Indexes
+
+# Désactiver les signatures serveur
+ServerSignature Off
+
+# Limite upload (ajuster selon besoins)
+# php_value upload_max_filesize 500M
+# php_value post_max_size 500M
+# php_value max_execution_time 300
+# php_value max_input_time 300
