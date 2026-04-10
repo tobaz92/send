@@ -26,7 +26,7 @@ Les services comme WeTransfer ou Smash imposent leurs limites, leur branding et 
 ## Installation
 
 ```bash
-git clone https://github.com/votre-user/send.git  # Adaptez l'URL
+git clone https://github.com/tobaz92/send.git
 cd send
 cp config.example.php config.php
 ```
