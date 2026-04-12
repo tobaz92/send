@@ -1,27 +1,29 @@
-# Send
+<p align="center">
+  <img src=".github/banner.svg" alt="Send">
+</p>
 
-Alternative self-hosted à WeTransfer, conçue pour fonctionner sur un **hébergement mutualisé** classique. Zéro dépendance, juste du PHP et une base SQLite.
+Alternative self-hosted à WeTransfer. PHP + SQLite, zéro dépendance. Ça tourne sur un mutualisé classique.
 
 ## Pourquoi ?
 
-Les services comme WeTransfer ou Smash imposent leurs limites, leur branding et leurs conditions d'utilisation. Send s'héberge sur n'importe quel hébergement PHP mutualisé — pas besoin de VPS, de Docker, ni de Node.js.
+WeTransfer, Smash... t'as pas la main sur les limites, le branding, les CGU. Send se pose sur n'importe quel hébergement PHP. Pas besoin de VPS, de Docker ou de Node.
 
 ## Fonctionnalités
 
-- Upload drag & drop avec support multi-fichiers
-- Liens de partage avec slugs personnalisables (aléatoire ou custom)
-- Protection par mot de passe optionnelle sur les partages
-- Téléchargement ZIP de tous les fichiers d'un partage
-- Panel admin avec statistiques et gestion des partages
-- Notifications email à chaque téléchargement
-- Pause/reprise des partages sans suppression
-- Rate limiting sur les téléchargements et tentatives de mot de passe
-- Audit log de toutes les actions
+- Upload drag & drop, multi-fichiers
+- Liens de partage avec slug custom ou aléatoire
+- Mot de passe optionnel sur les partages
+- Téléchargement ZIP groupé
+- Panel admin avec stats et gestion des partages
+- Notification email à chaque téléchargement
+- Pause/reprise des partages sans les supprimer
+- Rate limiting sur les downloads et les tentatives de mot de passe
+- Audit log
 
 ## Prérequis
 
-- PHP 8.1+ avec les extensions : `pdo_sqlite`, `finfo`, `zip`
-- Apache avec `mod_rewrite` activé
+- PHP 8.1+ avec `pdo_sqlite`, `finfo`, `zip`
+- Apache avec `mod_rewrite`
 
 ## Installation
 
@@ -31,52 +33,52 @@ cd send
 cp config.example.php config.php
 ```
 
-Éditez `config.php` :
+Ouvre `config.php` et remplis :
 
 ```php
-// Générer une clé secrète unique :
+// Génère une clé secrète :
 // php -r "echo bin2hex(random_bytes(32));"
 define('SECRET_KEY', 'votre_cle_secrete');
 
 define('ADMIN_USERNAME', 'votre_username');
 
-// Générer le hash du mot de passe :
+// Génère le hash du mot de passe :
 // php -r "echo password_hash('votre_mot_de_passe', PASSWORD_ARGON2ID);"
 define('ADMIN_PASSWORD_HASH', 'le_hash_genere');
 
 define('ADMIN_EMAIL', 'vous@example.com');
 ```
 
-Vérifiez les permissions du dossier `storage/` :
+Vérifie les permissions :
 
 ```bash
 chmod 755 storage/
 chmod 755 storage/files/
 ```
 
-La base de données SQLite est créée automatiquement au premier accès.
+La base SQLite se crée toute seule au premier accès.
 
 ## Utilisation
 
-1. Connectez-vous sur `/admin` avec les credentials configurés
-2. Allez sur `/admin/upload`, déposez vos fichiers, choisissez un slug et un mot de passe optionnel
-3. Copiez le lien généré (`/d/votre-slug`) et partagez-le
-4. Le destinataire accède à la page, entre le mot de passe si nécessaire, et télécharge les fichiers
+1. Connecte-toi sur `/admin`
+2. Va sur `/admin/upload`, dépose tes fichiers, choisis un slug et un mot de passe si besoin
+3. Copie le lien (`/d/ton-slug`) et envoie-le
+4. Le destinataire ouvre la page, entre le mot de passe si y'en a un, et télécharge
 
 ## Configuration
 
-Toutes les options sont dans `config.php`. Les plus utiles :
+Tout est dans `config.php`. Les options utiles :
 
 | Paramètre | Défaut | Description |
 |-----------|--------|-------------|
-| `ALLOWED_EXTENSIONS` | jpg, pdf, zip, mp4... | Liste blanche des extensions acceptées |
-| `MAX_FILE_SIZE` | `0` (limite serveur) | Taille max en octets par fichier |
-| `RATE_LIMIT_PASSWORD_ATTEMPTS` | `5` | Tentatives mot de passe avant blocage |
-| `RATE_LIMIT_PASSWORD_WINDOW` | `900` | Durée du blocage en secondes (15 min) |
-| `TRUSTED_PROXY` | `'none'` | `'cloudflare'`, `'proxy'`, ou `'none'` |
-| `SESSION_LIFETIME` | `86400` | Durée de session admin en secondes |
+| `ALLOWED_EXTENSIONS` | jpg, pdf, zip, mp4... | Extensions acceptées |
+| `MAX_FILE_SIZE` | `0` (limite serveur) | Taille max par fichier en octets |
+| `RATE_LIMIT_PASSWORD_ATTEMPTS` | `5` | Tentatives avant blocage |
+| `RATE_LIMIT_PASSWORD_WINDOW` | `900` | Durée du blocage (15 min) |
+| `TRUSTED_PROXY` | `'none'` | `'cloudflare'`, `'proxy'` ou `'none'` |
+| `SESSION_LIFETIME` | `86400` | Durée de session admin (secondes) |
 
-Pour augmenter la limite d'upload sur mutualisé, décommentez dans `.htaccess` :
+Pour augmenter la limite d'upload sur mutualisé, décommente dans `.htaccess` :
 
 ```apache
 php_value upload_max_filesize 500M
@@ -86,27 +88,27 @@ php_value max_execution_time 300
 
 ## Déploiement sur mutualisé
 
-1. Uploadez tous les fichiers via FTP/SFTP
-2. Vérifiez que `config.php` est bien configuré (`DEBUG` à `false`, `SECRET_KEY` changée)
-3. Le `.htaccess` gère le routage et la sécurité automatiquement
-4. Si vous êtes derrière Cloudflare, passez `TRUSTED_PROXY` à `'cloudflare'`
+1. Upload tous les fichiers via FTP/SFTP
+2. Vérifie que `config.php` est bon (`DEBUG` à `false`, `SECRET_KEY` changée)
+3. Le `.htaccess` gère le routage et la sécu
+4. Derrière Cloudflare ? Passe `TRUSTED_PROXY` à `'cloudflare'`
 
-## Développement local
+## Dev local
 
 ```bash
 php -S localhost:8000
-# Accès admin : http://localhost:8000/admin
+# Admin : http://localhost:8000/admin
 ```
 
-## Structure du projet
+## Structure
 
 ```
-├── index.php              # Router principal
-├── config.php             # Configuration (non versionné)
-├── config.example.php     # Template de configuration
-├── .htaccess              # Réécriture URL et sécurité Apache
-├── admin/                 # Panel d'administration
-├── public/                # Pages publiques (download, zip, assets)
+├── index.php              # Router
+├── config.php             # Config (non versionné)
+├── config.example.php     # Template de config
+├── .htaccess              # Réécriture URL + sécu Apache
+├── admin/                 # Panel admin
+├── public/                # Pages publiques, assets
 ├── src/                   # Classes PHP (Auth, Database, File, Share...)
 └── storage/               # Données (non versionné)
     ├── database.sqlite
@@ -115,12 +117,12 @@ php -S localhost:8000
 
 ## Sécurité
 
-- Hashage Argon2ID pour les mots de passe (admin et partages)
-- Protection CSRF sur tous les formulaires
-- Rate limiting sur login, mots de passe et téléchargements
-- Validation des uploads : whitelist d'extensions, vérification MIME et magic bytes, 85+ extensions dangereuses bloquées, détection des doubles extensions
-- Headers de sécurité (CSP, X-Frame-Options, X-Content-Type-Options)
-- Protection contre le path traversal
+- Hashage Argon2ID (admin + partages)
+- CSRF sur tous les formulaires
+- Rate limiting (login, mots de passe, downloads)
+- Validation uploads : whitelist d'extensions, vérif MIME + magic bytes, 85+ extensions dangereuses bloquées, doubles extensions détectées
+- Headers sécu (CSP, X-Frame-Options, X-Content-Type-Options)
+- Protection path traversal
 - Requêtes SQL préparées (PDO)
 - Accès direct à `config.php`, `storage/` et `src/` bloqué par `.htaccess`
 
