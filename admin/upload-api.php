@@ -2,10 +2,10 @@
 /**
  * Send - API de l'upload découpé (JSON uniquement)
  *
- * POST /admin/upload/start   name, size              → upload_id, chunk_size, total_chunks
- * POST /admin/upload/chunk   upload_id, index, chunk → ok
- * POST /admin/upload/finish  upload_ids[], options   → url, slug, files_count, errors
- * POST /admin/upload/cancel  upload_id               → ok
+ * POST /admin/api/upload/start   name, size              → upload_id, chunk_size, total_chunks
+ * POST /admin/api/upload/chunk   upload_id, index, chunk → ok
+ * POST /admin/api/upload/finish  upload_ids[], options   → url, slug, files_count, errors
+ * POST /admin/api/upload/cancel  upload_id               → ok
  *
  * Jeton CSRF dédié (Auth::generateUploadToken) dans l'en-tête X-CSRF-Token.
  */
