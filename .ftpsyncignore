@@ -3,6 +3,8 @@
 
 # Vivent sur le serveur, propres à la prod
 /config.php
+# Celui de prod force HTTPS sur le domaine réel ; le dépôt garde la règle commentée
+/.htaccess
 /.well-known/
 /.ovhconfig
 
