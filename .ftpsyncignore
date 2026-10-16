@@ -1,0 +1,26 @@
+# Send : chemins hors du jeu, dans les deux sens (jamais envoyés, jamais
+# supprimés ni écrasés en ligne, ni rapatriés).
+
+# Vivent sur le serveur, propres à la prod
+/config.php
+/.well-known/
+/.ovhconfig
+
+# Données des utilisateurs : partages et uploads en cours (volumineux,
+# hors sauvegarde ftp-sync). La base storage/database.sqlite, elle, est
+# sauvegardée à chaque envoi et jamais écrasée (absente du paquet).
+/storage/files/
+/storage/tmp/
+
+# Outillage et documentation, inutiles en ligne
+/tests/
+/phases/
+/PHASES.md
+*.md
+/.github/
+/.editorconfig
+/.gitignore
+/.ftpsyncignore
+/LICENSE
+/composer.json
+/config.example.php
