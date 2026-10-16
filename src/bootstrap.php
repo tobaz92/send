@@ -43,6 +43,8 @@ if (!headers_sent()) {
     header("X-Frame-Options: DENY");
     header("Referrer-Policy: strict-origin-when-cross-origin");
     header("Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()");
+    // Partages privés par nature : aucune page ni aucun fichier ne doit finir dans un moteur de recherche
+    header("X-Robots-Tag: noindex, nofollow, noarchive");
     header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'");
 
     // HSTS en production (HTTPS)
