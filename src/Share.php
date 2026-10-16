@@ -96,11 +96,11 @@ class Share
 
         if ($status) {
             $sql .= " WHERE s.status = ?";
-            $sql .= " ORDER BY s.created_at DESC";
+            $sql .= " ORDER BY s.created_at DESC, s.id DESC";
             return Database::fetchAll($sql, [$status]);
         }
 
-        $sql .= " WHERE s.status != 'deleted' ORDER BY s.created_at DESC";
+        $sql .= " WHERE s.status != 'deleted' ORDER BY s.created_at DESC, s.id DESC";
         return Database::fetchAll($sql);
     }
 
