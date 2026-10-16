@@ -142,8 +142,10 @@ class FileValidator
 
     private static function assertExtension(string $name, string $extension): void
     {
-        // SÉCURITÉ: Vérifier les double extensions (ex: file.php.jpg)
-        foreach (explode(".", strtolower($name)) as $part) {
+        // SÉCURITÉ: Vérifier les double extensions (ex: file.php.jpg).
+        // Le nom de base est exclu : « config.pdf » ou « old.txt » sont légitimes.
+        $extensions = array_slice(explode(".", strtolower($name)), 1);
+        foreach ($extensions as $part) {
             if (in_array(trim($part), self::DANGEROUS_EXTENSIONS)) {
                 throw new Exception("Extension dangereuse détectée.");
             }
