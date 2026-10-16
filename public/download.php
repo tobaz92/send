@@ -31,9 +31,9 @@ if (!empty($share['expires_at']) && strtotime($share['expires_at']) < time()) {
     exit;
 }
 
-// Enregistrer la vue (une fois par session)
+// Enregistrer la vue (une fois par session, jamais celles de l'admin)
 $viewKey = 'viewed_' . $share['id'];
-if (!isset($_SESSION[$viewKey])) {
+if (!isset($_SESSION[$viewKey]) && !AdminVisitor::isAdmin()) {
     Database::insert('views', [
         'share_id' => $share['id'],
         'ip' => Auth::getClientIp()
