@@ -9,4 +9,4 @@ appliquées au fichier final.
 - [x] 01 — extraction de la validation de fichier  (sha b5626e2)
 - [x] 02 — backend upload découpé  (sha bb2830a)
 - [x] 03 — client JS découpé  (sha 44e969f)
-- [ ] 04 — pentest et tests adverses
+- [x] 04 — pentest et tests adverses  (sha 8d8406b)
