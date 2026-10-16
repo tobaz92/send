@@ -5,6 +5,7 @@ config.php
 storage/database.sqlite
 storage/files/*
 !storage/files/.gitkeep
+storage/tmp/
 
 # Variables d'environnement
 .env

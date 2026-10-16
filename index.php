@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 // Pour le serveur PHP intégré : servir les fichiers statiques directement
 if (PHP_SAPI === 'cli-server') {
-    $uri = $_SERVER['REQUEST_URI'];
-    $file = __DIR__ . parse_url($uri, PHP_URL_PATH);
+    $uriPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+    $file = __DIR__ . $uriPath;
 
-    // Servir les assets statiques directement
-    if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2)$/', $uri) && file_exists($file)) {
+    // Servir les assets statiques directement (le ?v= de cache-busting est hors du chemin)
+    if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2)$/', $uriPath) && file_exists($file)) {
         return false;
     }
 }
@@ -41,7 +41,7 @@ $routes = [
     'POST /admin/login' => ['admin/login.php'],
     'POST /admin/logout' => ['admin/logout.php', 'auth'],
     'GET /admin/upload' => ['admin/upload.php', 'auth'],
-    'POST /admin/upload' => ['admin/upload.php', 'auth'],
+    'POST /admin/upload/(start|chunk|finish|cancel)' => ['admin/upload-api.php', 'auth-json'],
     'GET /admin/shares' => ['admin/shares.php', 'auth'],
     'GET /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],
     'POST /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],
@@ -76,11 +76,20 @@ foreach ($routes as $route => $config) {
             exit;
         }
 
-        $requireAuth = isset($config[1]) && $config[1] === 'auth';
+        $authMode = $config[1] ?? null;
 
         // Vérifier l'authentification si requise
-        if ($requireAuth && !Auth::check()) {
+        if ($authMode === 'auth' && !Auth::check()) {
             header('Location: ' . BASE_URL . '/admin/login');
+            exit;
+        }
+
+        // Pour l'API, une redirection vers le login serait lue comme du HTML par le client
+        if ($authMode === 'auth-json' && !Auth::check()) {
+            http_response_code(401);
+            header('Content-Type: application/json; charset=utf-8');
+            header('Cache-Control: no-store');
+            echo json_encode(['success' => false, 'error' => 'Session expirée, reconnectez-vous.']);
             exit;
         }
 

@@ -9,6 +9,9 @@ class Database
 {
     private static ?PDO $instance = null;
 
+    private const BUSY_TIMEOUT_MS = 10000;
+    private const SCHEMA_VERSION = 1;
+
     /**
      * Récupère l'instance PDO (singleton)
      */
@@ -28,6 +31,8 @@ class Database
 
             // Activer les clés étrangères SQLite
             self::$instance->exec('PRAGMA foreign_keys = ON');
+            // Les morceaux d'upload arrivent en rafale : attendre le verrou plutôt qu'échouer en SQLITE_BUSY
+            self::$instance->exec('PRAGMA busy_timeout = ' . self::BUSY_TIMEOUT_MS);
         }
 
         return self::$instance;
@@ -47,6 +52,12 @@ class Database
 
         if ($result->fetch() === false) {
             self::createTables();
+        }
+
+        // Hors createTables : une base existante (prod) doit aussi recevoir ces tables
+        if ((int) $db->query('PRAGMA user_version')->fetchColumn() < self::SCHEMA_VERSION) {
+            self::createUploadTables();
+            $db->exec('PRAGMA user_version = ' . self::SCHEMA_VERSION);
         }
 
         // Sécuriser les permissions du fichier de base (0600 = lecture/écriture propriétaire uniquement)
@@ -142,6 +153,36 @@ class Database
     }
 
     /**
+     * Tables des uploads découpés en cours
+     */
+    private static function createUploadTables(): void
+    {
+        $db = self::getInstance();
+
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS uploads (
+                id TEXT PRIMARY KEY,
+                original_name TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                chunk_size INTEGER NOT NULL,
+                total_chunks INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open', 'assembling')),
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ");
+
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS upload_chunks (
+                upload_id TEXT NOT NULL,
+                chunk_index INTEGER NOT NULL,
+                PRIMARY KEY (upload_id, chunk_index),
+                FOREIGN KEY (upload_id) REFERENCES uploads(id) ON DELETE CASCADE
+            )
+        ");
+    }
+
+    /**
      * Helper : prépare et exécute une requête
      */
     public static function query(string $sql, array $params = []): \PDOStatement
@@ -173,7 +214,8 @@ class Database
      * Tables autorisées (whitelist)
      */
     private const ALLOWED_TABLES = [
-        'shares', 'files', 'downloads', 'views', 'login_attempts', 'audit_logs'
+        'shares', 'files', 'downloads', 'views', 'login_attempts', 'audit_logs',
+        'uploads', 'upload_chunks'
     ];
 
     /**

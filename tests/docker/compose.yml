@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    volumes:
+      - ${SEND_APP_DIR:?}:/var/www/html
+  proxy:
+    image: nginx:1.27-alpine
+    depends_on: [app]
+    ports:
+      - "127.0.0.1:${SEND_PROXY_PORT:?}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
