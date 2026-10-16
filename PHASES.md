@@ -6,7 +6,7 @@ requête : au-delà, « Erreur serveur inattendue. ». Cible : upload découpé
 en morceaux, chaque requête bornée, toutes les vérifications de sécurité
 appliquées au fichier final.
 
-- [ ] 01 — extraction de la validation de fichier
+- [x] 01 — extraction de la validation de fichier  (sha b5626e2)
 - [ ] 02 — backend upload découpé
 - [ ] 03 — client JS découpé
 - [ ] 04 — pentest et tests adverses
