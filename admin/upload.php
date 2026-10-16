@@ -20,7 +20,7 @@ if (!Auth::check()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nouveau partage - Send</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL) ?>/public/assets/style.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL) ?>/public/assets/style.css?v=<?= filemtime(ROOT_PATH . '/public/assets/style.css') ?>">
 </head>
 <body>
     <div class="admin-layout">
@@ -111,10 +111,12 @@ if (!Auth::check()) {
 
                 <!-- Progress bar -->
                 <div id="progress-section" class="progress-section" style="display: none;">
-                    <div class="progress-bar">
+                    <div id="progress-bar" class="progress-bar" role="progressbar"
+                         aria-label="Progression totale" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                         <div id="progress-fill" class="progress-fill"></div>
                     </div>
-                    <p id="progress-text">Upload en cours...</p>
+                    <p id="progress-text" class="progress-text">Préparation…</p>
+                    <ul id="progress-files" class="progress-files"></ul>
                 </div>
 
                 <!-- Résultat -->
@@ -145,6 +147,7 @@ if (!Auth::check()) {
 
     <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/app.js?v=<?= filemtime(ROOT_PATH . '/public/assets/app.js') ?>"></script>
     <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/upload-client.js?v=<?= filemtime(ROOT_PATH . '/public/assets/upload-client.js') ?>"></script>
+    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/upload-progress.js?v=<?= filemtime(ROOT_PATH . '/public/assets/upload-progress.js') ?>"></script>
     <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/upload.js?v=<?= filemtime(ROOT_PATH . '/public/assets/upload.js') ?>"></script>
 </body>
 </html>

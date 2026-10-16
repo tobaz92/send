@@ -378,6 +378,51 @@ input:focus, textarea:focus, select:focus {
     transition: width 0.2s;
 }
 
+.progress-text {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-files {
+    list-style: none;
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.progress-file {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.progress-file:last-child { border-bottom: none; }
+.progress-file .progress-bar { grid-column: 1 / -1; }
+.progress-bar-sm { height: 4px; }
+
+.progress-file-name { word-break: break-all; }
+.progress-file-status { font-size: 12px; color: var(--text-muted); text-align: right; }
+.progress-file-meta {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-file.is-waiting { opacity: 0.6; }
+.progress-file.is-sending .progress-file-status { color: var(--text); font-weight: 500; }
+.progress-file.is-done .progress-fill { background: var(--success); }
+.progress-file.is-done .progress-file-status { color: var(--success); }
+.progress-file.is-rejected .progress-fill { background: var(--danger); }
+.progress-file.is-rejected .progress-file-status { color: var(--danger); grid-column: 1 / -1; text-align: left; }
+
+@media (prefers-reduced-motion: reduce) {
+    .progress-fill { transition: none; }
+}
+
 .result-section { margin: 24px 0; }
 
 .result-success {
