@@ -7,6 +7,6 @@ en morceaux, chaque requête bornée, toutes les vérifications de sécurité
 appliquées au fichier final.
 
 - [x] 01 — extraction de la validation de fichier  (sha b5626e2)
-- [ ] 02 — backend upload découpé
+- [x] 02 — backend upload découpé  (sha bb2830a)
 - [ ] 03 — client JS découpé
 - [ ] 04 — pentest et tests adverses
