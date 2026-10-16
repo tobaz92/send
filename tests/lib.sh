@@ -40,7 +40,7 @@ setup_app() {
 }
 
 start_server() {
-    (cd "$APP" && php -d upload_max_filesize="$UPLOAD_MAX" -d post_max_size="$POST_MAX" \
+    (cd "$APP" && exec php -d upload_max_filesize="$UPLOAD_MAX" -d post_max_size="$POST_MAX" \
         -S "127.0.0.1:$PORT" index.php >"$WORK/server.log" 2>&1) &
     SERVER_PID=$!
     for _ in $(seq 1 50); do
