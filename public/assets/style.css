@@ -620,6 +620,10 @@ input:focus, textarea:focus, select:focus {
 .promo-card a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
 .promo-card a:hover { color: var(--primary-hover); }
 
+.promo-align-left { text-align: left; }
+.promo-align-center { text-align: center; }
+.promo-align-right { text-align: right; }
+
 @media (min-width: 900px) {
     .has-wallpaper .download-container { align-items: flex-start; padding: 48px 64px; }
     /* Aligné sur le bord gauche du bloc de téléchargement */
@@ -657,6 +661,8 @@ input:focus, textarea:focus, select:focus {
 
 .editor { border: 1px solid var(--border); border-radius: var(--radius); }
 .editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border-bottom: 1px solid var(--border); background: var(--bg-alt); }
+.editor-toolbar-separator { width: 1px; margin: 2px 4px; background: var(--border); }
+.editor-toolbar [aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
 .editor-area { min-height: 120px; padding: 12px; outline: none; }
 .editor-area:focus { box-shadow: inset 0 0 0 1px var(--primary); }
 .editor-area h1 { font-size: 1.25rem; margin-bottom: 6px; }

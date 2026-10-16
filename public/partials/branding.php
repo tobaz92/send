@@ -14,6 +14,7 @@ if (!defined('SEND_BOOTSTRAPPED')) {
 $brandingWallpapers = Branding::wallpaperUrls();
 // HTML déjà nettoyé par liste blanche à l'enregistrement (Branding::normalizePromo)
 $brandingPromoHtml = Branding::promoHtml();
+$brandingPromoAlign = Branding::promoAlign();
 ?>
 <?php if ($brandingWallpapers !== []): ?>
     <div class="page-wallpapers" aria-hidden="true"
@@ -25,5 +26,5 @@ $brandingPromoHtml = Branding::promoHtml();
     <?php endif; ?>
 <?php endif; ?>
 <?php if ($brandingPromoHtml !== ''): ?>
-    <aside class="promo-card" aria-label="Annonce"><?= $brandingPromoHtml ?></aside>
+    <aside class="promo-card promo-align-<?= $brandingPromoAlign ?>" aria-label="Annonce"><?= $brandingPromoHtml ?></aside>
 <?php endif; ?>

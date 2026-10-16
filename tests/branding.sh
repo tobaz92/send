@@ -75,6 +75,12 @@ check "aperçu encadrable par le même site" SAMEORIGIN "$(header_of x-frame-opt
 check "aperçu : frame-ancestors 'self'" 1 "$(header_of content-security-policy "$BASE/admin/branding-preview" | grep -c "frame-ancestors 'self'")"
 check "page réelle toujours non encadrable" DENY "$(header_of x-frame-options "$BASE/d/$slug")"
 
+check "alignement centré → 302" 302 "$(post_branding --form-string "promo_html=$promo" -F promo_align=center)"
+check "bandeau centré sur la page publique" 1 "$(curl -s "$BASE/d/$slug" | grep -c 'class="promo-card promo-align-center"')"
+post_branding --form-string "promo_html=$promo" --form-string 'promo_align=left;color:red' >/dev/null
+check "alignement inconnu refusé" 1 "$(page_error | grep -c 'Alignement')"
+check "alignement inchangé après refus" center "$(db "SELECT value FROM settings WHERE key='branding_promo_align'")"
+
 check "encart vidé → 302" 302 "$(post_branding --form-string 'promo_html=<p><br></p>')"
 check "encart vide : masqué" 0 "$(curl -s "$BASE/d/$slug" | grep -c 'promo-card')"
 

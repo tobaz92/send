@@ -27,6 +27,8 @@ class Branding
 
     private const KEY_WALLPAPERS = 'branding_wallpapers';
     private const KEY_PROMO_HTML = 'branding_promo_html';
+    private const KEY_PROMO_ALIGN = 'branding_promo_align';
+    public const PROMO_ALIGNMENTS = ['left', 'center', 'right'];
 
     /** @return string[] noms stockés, dans l'ordre d'ajout */
     public static function wallpapers(): array
@@ -116,9 +118,27 @@ class Branding
         return $text === '' ? '' : $clean;
     }
 
-    public static function savePromo(string $cleanHtml): void
+    public static function savePromo(string $cleanHtml, string $align): void
     {
         Settings::set(self::KEY_PROMO_HTML, $cleanHtml);
+        Settings::set(self::KEY_PROMO_ALIGN, $align);
+    }
+
+    public static function promoAlign(): string
+    {
+        $align = Settings::get(self::KEY_PROMO_ALIGN) ?? 'left';
+        return in_array($align, self::PROMO_ALIGNMENTS, true) ? $align : 'left';
+    }
+
+    /**
+     * @throws Exception si l'alignement n'est pas proposé par l'éditeur
+     */
+    public static function normalizeAlign(string $align): string
+    {
+        if (!in_array($align, self::PROMO_ALIGNMENTS, true)) {
+            throw new Exception('Alignement de l\'encart invalide.');
+        }
+        return $align;
     }
 
     public static function isStoredName(mixed $name): bool
