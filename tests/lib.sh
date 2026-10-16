@@ -112,7 +112,7 @@ jget() {
 
 api() {
     local action="$1"; shift
-    curl -s -b "$JAR" -H "X-CSRF-Token: $UPLOAD_TOKEN" -w '\n%{http_code}' "$@" "$BASE/admin/upload/$action"
+    curl -s -b "$JAR" -H "X-CSRF-Token: $UPLOAD_TOKEN" -w '\n%{http_code}' "$@" "$BASE/admin/api/upload/$action"
 }
 
 body_of() { sed '$d' <<<"$1"; }

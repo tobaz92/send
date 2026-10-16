@@ -41,7 +41,8 @@ $routes = [
     'POST /admin/login' => ['admin/login.php'],
     'POST /admin/logout' => ['admin/logout.php', 'auth'],
     'GET /admin/upload' => ['admin/upload.php', 'auth'],
-    'POST /admin/upload/(start|chunk|finish|cancel)' => ['admin/upload-api.php', 'auth-json'],
+    // Hors de /admin/upload/ : avec MultiViews (OVH), /admin/upload/x serait servi par admin/upload.php
+    'POST /admin/api/upload/(start|chunk|finish|cancel)' => ['admin/upload-api.php', 'auth-json'],
     'GET /admin/shares' => ['admin/shares.php', 'auth'],
     'GET /admin/branding' => ['admin/branding.php', 'auth'],
     'POST /admin/branding' => ['admin/branding.php', 'auth'],
