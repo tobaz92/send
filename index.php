@@ -42,6 +42,7 @@ $routes = [
     'POST /admin/logout' => ['admin/logout.php', 'auth'],
     'GET /admin/upload' => ['admin/upload.php', 'auth'],
     'POST /admin/upload' => ['admin/upload.php', 'auth'],
+    'POST /admin/upload/(start|chunk|finish|cancel)' => ['admin/upload-api.php', 'auth-json'],
     'GET /admin/shares' => ['admin/shares.php', 'auth'],
     'GET /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],
     'POST /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],
@@ -76,11 +77,19 @@ foreach ($routes as $route => $config) {
             exit;
         }
 
-        $requireAuth = isset($config[1]) && $config[1] === 'auth';
+        $authMode = $config[1] ?? null;
 
         // Vérifier l'authentification si requise
-        if ($requireAuth && !Auth::check()) {
+        if ($authMode === 'auth' && !Auth::check()) {
             header('Location: ' . BASE_URL . '/admin/login');
+            exit;
+        }
+
+        // Pour l'API, une redirection vers le login serait lue comme du HTML par le client
+        if ($authMode === 'auth-json' && !Auth::check()) {
+            http_response_code(401);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => false, 'error' => 'Session expirée, reconnectez-vous.']);
             exit;
         }
 

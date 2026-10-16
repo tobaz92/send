@@ -241,6 +241,15 @@ class Auth
     }
 
     /**
+     * Vérifie un token CSRF sans le renouveler : un upload découpé enchaîne
+     * des dizaines de requêtes avec le même jeton.
+     */
+    public static function verifyCsrfTokenKeep(string $token): bool
+    {
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    }
+
+    /**
      * Retourne le temps restant de blocage en secondes
      */
     public static function getBlockTimeRemaining(string $ip): int
