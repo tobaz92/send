@@ -42,153 +42,38 @@ class FileValidator
      */
     private const DANGEROUS_EXTENSIONS = [
         // PHP et variantes
-
-        "php",
-        "php3",
-        "php4",
-        "php5",
-        "php7",
-        "php8",
-        "phtml",
-        "phar",
-        "phps",
-        "pht",
-        "phpt",
-        "pgif",
-        "phtm",
-        "inc",
-        "module",
-
+        "php", "php3", "php4", "php5", "php7", "php8", "phtml", "phar",
+        "phps", "pht", "phpt", "pgif", "phtm", "inc", "module",
         // ASP / ASP.NET
-        "asp",
-        "aspx",
-        "asa",
-        "asax",
-        "ascx",
-        "ashx",
-        "asmx",
-        "cer",
-        "cdx",
-        "config",
-        "axd",
-
+        "asp", "aspx", "asa", "asax", "ascx", "ashx", "asmx", "cer", "cdx",
+        "config", "axd",
         // Java / JSP
-        "jsp",
-        "jspx",
-        "jsw",
-        "jsv",
-        "jspf",
-        "java",
-        "jar",
-        "war",
-        "class",
-
+        "jsp", "jspx", "jsw", "jsv", "jspf", "java", "jar", "war", "class",
         // ColdFusion
-        "cfm",
-        "cfml",
-        "cfc",
-        "dbm",
-
+        "cfm", "cfml", "cfc", "dbm",
         // Scripts serveur
-        "cgi",
-        "pl",
-        "pm",
-        "py",
-        "pyc",
-        "pyo",
-        "pyw",
-        "rb",
-        "rhtml",
-
+        "cgi", "pl", "pm", "py", "pyc", "pyo", "pyw", "rb", "rhtml",
         // SSI (Server Side Includes)
-        "shtml",
-        "shtm",
-        "stm",
-
+        "shtml", "shtm", "stm",
         // Shell / système
-        "sh",
-        "bash",
-        "zsh",
-        "ksh",
-        "csh",
-        "bat",
-        "cmd",
-        "ps1",
-        "psm1",
+        "sh", "bash", "zsh", "ksh", "csh", "bat", "cmd", "ps1", "psm1",
         "psd1",
-
         // Windows executables & scripts
-        "exe",
-        "com",
-        "msi",
-        "msp",
-        "scr",
-        "pif",
-        "gadget",
-        "hta",
-        "cpl",
-        "msc",
-        "inf",
-        "reg",
-        "vbs",
-        "vbe",
-        "vb",
-        "wsf",
-        "wsh",
-        "ws",
-        "sct",
-        "js",
-        "jse",
-        "lnk",
-        "scf",
-        "url",
-
+        "exe", "com", "msi", "msp", "scr", "pif", "gadget", "hta", "cpl",
+        "msc", "inf", "reg", "vbs", "vbe", "vb", "wsf", "wsh", "ws", "sct",
+        "js", "jse", "lnk", "scf", "url",
         // Apache / Nginx config
-        "htaccess",
-        "htpasswd",
-        "htgroup",
-        "htdigest",
-        "user.ini",
-        "php.ini",
+        "htaccess", "htpasswd", "htgroup", "htdigest", "user.ini", "php.ini",
         "nginx.conf",
-
         // Fichiers de config sensibles
-        "ini",
-        "env",
-        "yml",
-        "yaml",
-        "toml",
-        "json",
-        "xml",
-        "sql",
-        "sqlite",
-        "db",
-        "mdb",
-        "accdb",
-        "log",
-        "bak",
-        "old",
-        "backup",
-        "swp",
-        "tmp",
-
+        "ini", "env", "yml", "yaml", "toml", "json", "xml", "sql", "sqlite",
+        "db", "mdb", "accdb", "log", "bak", "old", "backup", "swp", "tmp",
         // Templates avec exécution potentielle
-        "tpl",
-        "twig",
-        "blade",
-        "smarty",
-        "mustache",
-        "hbs",
-
+        "tpl", "twig", "blade", "smarty", "mustache", "hbs",
         // Flash / Silverlight (XSS, obsolètes mais dangereux)
-        "swf",
-        "xap",
-
+        "swf", "xap",
         // Autres potentiellement dangereux
-        "svg",
-        "svgz",
-        "xsl",
-        "xslt",
+        "svg", "svgz", "xsl", "xslt",
     ];
 
     /**
@@ -199,17 +84,33 @@ class FileValidator
      */
     public static function validate(string $path, string $originalName): array
     {
-        $name = self::sanitizeFilename($originalName);
-        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-
-        self::assertExtension($name, $extension);
+        ["name" => $name, "extension" => $extension] = self::checkName($originalName);
         $mime = self::detectMime($path, $extension);
 
-        if (MAX_FILE_SIZE > 0 && filesize($path) > MAX_FILE_SIZE) {
+        $size = filesize($path);
+        if ($size === false) {
+            throw new Exception("Taille du fichier illisible.");
+        }
+        if (MAX_FILE_SIZE > 0 && $size > MAX_FILE_SIZE) {
             throw new Exception("Fichier trop volumineux.");
         }
 
         return ["name" => $name, "extension" => $extension, "mime" => $mime];
+    }
+
+    /**
+     * Nettoie le nom et vérifie ses extensions, sans lire le contenu.
+     *
+     * @return array{name: string, extension: string}
+     * @throws Exception si une extension est refusée
+     */
+    public static function checkName(string $originalName): array
+    {
+        $name = self::sanitizeFilename($originalName);
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        self::assertExtension($name, $extension);
+
+        return ["name" => $name, "extension" => $extension];
     }
 
     /**
@@ -225,12 +126,15 @@ class FileValidator
 
         // Supprimer les caractères dangereux
         $filename = preg_replace("/[^\p{L}\p{N}\s\-_\.]/u", "", $filename);
+        if ($filename === null) {
+            throw new Exception("Nom de fichier invalide (encodage).");
+        }
 
         // Limiter la longueur
         if (strlen($filename) > 200) {
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $name = pathinfo($filename, PATHINFO_FILENAME);
-            $filename = substr($name, 0, 190) . "." . $ext;
+            $filename = mb_substr($name, 0, 190) . "." . $ext;
         }
 
         return $filename ?: "fichier";
@@ -240,7 +144,7 @@ class FileValidator
     {
         // SÉCURITÉ: Vérifier les double extensions (ex: file.php.jpg)
         foreach (explode(".", strtolower($name)) as $part) {
-            if (in_array($part, self::DANGEROUS_EXTENSIONS)) {
+            if (in_array(trim($part), self::DANGEROUS_EXTENSIONS)) {
                 throw new Exception("Extension dangereuse détectée.");
             }
         }
