@@ -16,22 +16,6 @@ function formatSize(bytes) {
     return size.toFixed(i > 0 ? 2 : 0) + ' ' + units[i];
 }
 
-function buildWarning(errors) {
-    const warning = document.createElement('div');
-    warning.className = 'alert alert-warning';
-
-    const strong = document.createElement('strong');
-    strong.textContent = 'Attention :';
-    warning.appendChild(strong);
-    warning.appendChild(document.createTextNode(' Certains fichiers n\'ont pas pu être uploadés :'));
-
-    errors.forEach(message => {
-        warning.appendChild(document.createElement('br'));
-        warning.appendChild(document.createTextNode(message));
-    });
-    return warning;
-}
-
 function findElements() {
     const form = document.getElementById('upload-form');
     if (!form) return null;
@@ -45,7 +29,9 @@ function findElements() {
         totalSize: document.getElementById('total-size'),
         optionsSection: form.querySelector('.form-section'),
         progressSection: document.getElementById('progress-section'),
+        progressBar: document.getElementById('progress-bar'),
         progressFill: document.getElementById('progress-fill'),
+        progressFiles: document.getElementById('progress-files'),
         progressText: document.getElementById('progress-text'),
         resultSection: document.getElementById('result-section'),
         errorBox: document.getElementById('upload-error'),
@@ -135,18 +121,15 @@ function setSending(els, selection, sending) {
     els.fileList.style.display = 'none';
     els.submitBtn.disabled = true;
     els.errorBox.style.display = 'none';
-    els.progressFill.style.width = '0%';
 }
 
-function showResult(els, result) {
-    els.progressSection.style.display = 'none';
+// La liste de progression reste affichée : elle porte l'état final de chaque fichier
+function showResult(els, view, result) {
+    view.showResults(result.uploadIds, result.rejected);
     els.submitBtn.style.display = 'none';
     els.resultSection.style.display = 'block';
     document.getElementById('share-url').value = result.url;
     document.getElementById('view-share-link').href = els.form.dataset.shareBase + encodeURIComponent(result.slug);
-    if (result.errors && result.errors.length > 0) {
-        els.resultSection.querySelector('.result-success').prepend(buildWarning(result.errors));
-    }
 }
 
 function showError(els, message) {
@@ -159,31 +142,25 @@ function readShareOptions(form) {
     return ['title', 'password', 'slug_type', 'custom_slug'].map(key => [key, data.get(key) ?? '']);
 }
 
-function trackProgress(els, totalBytes) {
-    return sentBytes => {
-        const percent = totalBytes > 0 ? Math.round((sentBytes / totalBytes) * 100) : 100;
-        els.progressFill.style.width = percent + '%';
-        els.progressText.textContent = `Upload en cours... ${percent}%`;
-    };
-}
-
 async function submitUpload(els, selection, apiBase) {
     const files = selection.list();
     const session = { apiBase, token: els.form.dataset.uploadToken, openIds: [] };
-    const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
 
     setSending(els, selection, true);
+    let view = null;
     let result;
     try {
-        result = await runUpload(files, readShareOptions(els.form), session, trackProgress(els, totalBytes));
+        view = createProgressView(els, files);
+        result = await runUpload(files, readShareOptions(els.form), session, view);
     } catch (error) {
+        view?.cancel();
         setSending(els, selection, false);
         showError(els, error.message);
         console.error('Upload échoué :', error);
         return;
     }
     // Hors du try : le partage existe, un incident d'affichage ne doit pas inviter à renvoyer
-    showResult(els, result);
+    showResult(els, view, result);
 }
 
 function initUploadPage() {

@@ -129,21 +129,26 @@ function warnBeforeUnload(event) {
     event.returnValue = '';
 }
 
-async function runUpload(files, shareOptions, session, onBytes) {
+/**
+ * progress : { fileStarted(i), fileBytes(i, octetsEnvoyésDuFichier), fileSent(i), finishing() }
+ * Renvoie le résultat de finish complété par uploadIds (dans l'ordre de files).
+ */
+async function runUpload(files, shareOptions, session, progress) {
     window.addEventListener('beforeunload', warnBeforeUnload);
     try {
         const uploadIds = [];
-        let previousFilesBytes = 0;
-        for (const file of files) {
-            uploadIds.push(await sendFile(file, session, fileBytes => onBytes(previousFilesBytes + fileBytes)));
-            previousFilesBytes += file.size;
+        for (const [index, file] of files.entries()) {
+            progress.fileStarted(index);
+            uploadIds.push(await sendFile(file, session, bytes => progress.fileBytes(index, bytes)));
+            progress.fileSent(index);
         }
+        progress.finishing();
         const result = await callApi(`${session.apiBase}/finish`, session.token, [
             ...uploadIds.map(id => ['upload_ids[]', id]),
             ...shareOptions,
         ]);
         session.openIds.length = 0;
-        return result;
+        return { ...result, uploadIds };
     } catch (error) {
         await cancelOpenUploads(session);
         throw error;
