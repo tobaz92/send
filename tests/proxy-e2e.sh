@@ -37,6 +37,13 @@ id="$(body_of "$(api_start probe.txt 3)" | jget upload_id)"
 for path in "storage/tmp/$id.part" storage/database.sqlite "storage/files/$stored" src/ChunkUpload.php config.php; do
     check "accès direct /$path → 403" 403 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/$path")"
 done
+php -r '$i = imagecreatetruecolor(64, 64); imagepng($i, $argv[1]);' "$WORK/fond.png"
+csrf="$(curl -s -b "$JAR" -c "$JAR" "$BASE/admin/branding" | csrf_from)"
+curl -s -o /dev/null -b "$JAR" -c "$JAR" -F "csrf_token=$csrf" -F "wallpaper=@$WORK/fond.png" -F promo_text= -F promo_url= "$BASE/admin/branding"
+wallpaper="$(ls "$APP/storage/branding")"
+check "image de fond servie par sa route" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/branding/wallpaper")"
+check "accès direct /storage/branding/<image> → 403" 403 \
+    "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/storage/branding/$wallpaper")"
 check "upload-api.php appelé directement sans session → 401" 401 \
     "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/admin/upload-api.php")"
 check "upload-api.php direct avec session → 404 (pas d'action)" 404 \
