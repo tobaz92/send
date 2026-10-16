@@ -14,7 +14,7 @@ class ChunkUpload
     private const EXPIRY_SECONDS = 86400;
     private const MAX_OPEN_UPLOADS = 100;
     private const DISK_MARGIN_BYTES = 100 * 1024 * 1024;
-    private const ID_PATTERN = '/^[a-f0-9]{32}$/';
+    private const ID_PATTERN = '/^[a-f0-9]{32}\z/';
     private const MAX_INDEX_DIGITS = 9;
 
     /**

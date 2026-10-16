@@ -138,12 +138,12 @@ function setSending(els, selection, sending) {
     els.progressFill.style.width = '0%';
 }
 
-function showResult(els, apiBase, result) {
+function showResult(els, result) {
     els.progressSection.style.display = 'none';
     els.submitBtn.style.display = 'none';
     els.resultSection.style.display = 'block';
     document.getElementById('share-url').value = result.url;
-    document.getElementById('view-share-link').href = apiBase.replace(/\/upload$/, '/share/') + encodeURIComponent(result.slug);
+    document.getElementById('view-share-link').href = els.form.dataset.shareBase + encodeURIComponent(result.slug);
     if (result.errors && result.errors.length > 0) {
         els.resultSection.querySelector('.result-success').prepend(buildWarning(result.errors));
     }
@@ -183,14 +183,15 @@ async function submitUpload(els, selection, apiBase) {
         return;
     }
     // Hors du try : le partage existe, un incident d'affichage ne doit pas inviter à renvoyer
-    showResult(els, apiBase, result);
+    showResult(els, result);
 }
 
 function initUploadPage() {
     const els = findElements();
     if (!els) return;
 
-    const apiBase = location.pathname.replace(/\/$/, '');
+    // Rendue par le serveur : location.pathname suivrait une URL piégée (« //autre-domaine/admin/upload »)
+    const apiBase = els.form.dataset.apiBase;
     const selection = createSelection(els);
 
     bindDropZone(els, selection);

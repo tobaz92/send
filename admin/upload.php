@@ -37,7 +37,10 @@ if (!Auth::check()) {
         <main class="admin-main">
             <h1>Nouveau partage</h1>
 
-            <form id="upload-form" class="upload-form" data-upload-token="<?= htmlspecialchars(Auth::generateUploadToken()) ?>">
+            <form id="upload-form" class="upload-form"
+                  data-upload-token="<?= htmlspecialchars(Auth::generateUploadToken()) ?>"
+                  data-api-base="<?= htmlspecialchars(BASE_URL) ?>/admin/upload"
+                  data-share-base="<?= htmlspecialchars(BASE_URL) ?>/admin/share/">
                 <!-- Zone de drop -->
                 <div id="drop-zone" class="drop-zone">
                     <div class="drop-zone-content">

@@ -88,6 +88,7 @@ foreach ($routes as $route => $config) {
         if ($authMode === 'auth-json' && !Auth::check()) {
             http_response_code(401);
             header('Content-Type: application/json; charset=utf-8');
+            header('Cache-Control: no-store');
             echo json_encode(['success' => false, 'error' => 'Session expirée, reconnectez-vous.']);
             exit;
         }
