@@ -602,11 +602,6 @@ input:focus, textarea:focus, select:focus {
 /* Bandeau en bas de page : dernier élément du flex de .public-page (min-height 100vh),
    donc collé au bas de l'écran sans jamais recouvrir la liste des fichiers */
 .promo-card {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 8px;
-    row-gap: 4px;
     width: 100%;
     padding: 12px 24px;
     background: var(--bg);
@@ -614,8 +609,14 @@ input:focus, textarea:focus, select:focus {
     font-size: 13px;
 }
 
-.promo-card h1 { font-size: 13px; margin: 0; }
-.promo-card p { margin: 0; color: var(--text-muted); }
+/* En ligne et non en flex : un texte saisi hors paragraphe deviendrait un élément
+   flex à part, séparé du lien qui le suit par l'écart */
+.promo-card h1,
+.promo-card p { display: inline; margin: 0; }
+.promo-card h1 { font-size: 13px; }
+.promo-card p { color: var(--text-muted); }
+.promo-card h1 + p,
+.promo-card p + p { margin-left: 8px; }
 .promo-card a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
 .promo-card a:hover { color: var(--primary-hover); }
 
