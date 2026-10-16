@@ -17,12 +17,16 @@ class UploadFinisher
 
     /**
      * @param string[] $uploadIds
-     * @return array{slug: string, url: string, files_count: int, errors: string[]}
+     * @return array{slug: string, url: string, files_count: int, errors: string[], rejected: list<array{upload_id: string, error: string}>}
      */
     public static function finish(array $uploadIds, array $shareData): array
     {
         $claimed = self::claimAll($uploadIds);
-        [$accepted, $errors] = self::validateAll($claimed);
+        [$accepted, $rejected] = self::validateAll($claimed);
+        $errors = [];
+        foreach ($rejected as $id => $message) {
+            $errors[] = $claimed[$id]['row']['original_name'] . ': ' . $message;
+        }
 
         if ($accepted === []) {
             self::discardAll($claimed);
@@ -44,7 +48,12 @@ class UploadFinisher
         }
 
         self::discardAll($claimed);
-        return $result + ['errors' => $errors];
+        // rejected : par id, pour que le client marque le bon fichier sans comparer des noms nettoyés
+        $rejectedList = [];
+        foreach ($rejected as $id => $message) {
+            $rejectedList[] = ['upload_id' => $id, 'error' => $message];
+        }
+        return $result + ['errors' => $errors, 'rejected' => $rejectedList];
     }
 
     /**
@@ -69,21 +78,20 @@ class UploadFinisher
     }
 
     /**
-     * @return array{0: array<string, array>, 1: string[]} fichiers acceptés par id, messages de refus
+     * @return array{0: array<string, array>, 1: array<string, string>} fichiers acceptés et motifs de refus, par id
      */
     private static function validateAll(array $claimed): array
     {
         $accepted = [];
-        $errors = [];
+        $rejected = [];
         foreach ($claimed as $id => $upload) {
-            $name = $upload['row']['original_name'];
             try {
-                $accepted[$id] = FileValidator::validate(UploadStorage::partPath($id), $name);
+                $accepted[$id] = FileValidator::validate(UploadStorage::partPath($id), $upload['row']['original_name']);
             } catch (Exception $e) {
-                $errors[] = $name . ': ' . $e->getMessage();
+                $rejected[$id] = $e->getMessage();
             }
         }
-        return [$accepted, $errors];
+        return [$accepted, $rejected];
     }
 
     /**

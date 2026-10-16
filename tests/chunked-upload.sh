@@ -31,6 +31,13 @@ check "storage/tmp vidé" 0 "$(find "$APP/storage/tmp" -type f | wc -l | tr -d '
 check "uploads purgés en base" 0 "$(sqlite3 "$APP/storage/database.sqlite" 'SELECT COUNT(*) FROM uploads')"
 check "partage public accessible" 200 "$(curl -s -o /dev/null -w '%{http_code}' "$BASE/d/$slug")"
 
+printf '<?php echo 1;' >"$WORK/evil.jpg"
+id_evil="$(upload_file "$WORK/evil.jpg" evil.jpg)"
+id_ok="$(upload_file "$WORK/note.txt" ok.txt)"
+r="$(api_finish "$id_evil" "$id_ok")"
+check "fichier refusé identifié par son upload_id" "$id_evil" "$(body_of "$r" | jget rejected.0.upload_id)"
+check "un seul refus listé" 1 "$(body_of "$r" | php -r 'echo count(json_decode(stream_get_contents(STDIN), true)["rejected"]);')"
+
 r="$(api_finish "$id_big")"
 check "second finish du même upload refusé" 404 "$(code_of "$r")"
 
