@@ -31,7 +31,8 @@ function createSpeedMeter() {
         add(totalBytes) {
             const now = performance.now();
             samples.push([now, totalBytes]);
-            while (samples.length > 2 && now - samples[0][0] > SPEED_WINDOW_MS) {
+            // Fenêtre stricte : après la pause d'un réessai, les vieux échantillons fausseraient le débit
+            while (samples.length > 1 && now - samples[0][0] > SPEED_WINDOW_MS) {
                 samples.shift();
             }
         },
@@ -39,7 +40,8 @@ function createSpeedMeter() {
             if (samples.length < 2) return 0;
             const [firstTime, firstBytes] = samples[0];
             const [lastTime, lastBytes] = samples[samples.length - 1];
-            return lastTime > firstTime ? ((lastBytes - firstBytes) * 1000) / (lastTime - firstTime) : 0;
+            const speed = lastTime > firstTime ? ((lastBytes - firstBytes) * 1000) / (lastTime - firstTime) : 0;
+            return Math.max(0, speed);
         },
     };
 }
@@ -74,12 +76,14 @@ function buildProgressRow(file) {
 
     const row = {
         item,
+        bar,
+        fill,
         setStatus(key, detail = '') {
             item.className = `progress-file is-${key}`;
             status.textContent = detail ? `${STATUS_LABELS[key]} : ${detail}` : STATUS_LABELS[key];
         },
         setBytes(bytes) {
-            setBar(bar, fill, file.size > 0 ? Math.round((bytes / file.size) * 100) : 100);
+            setBar(bar, fill, file.size > 0 ? Math.floor((bytes / file.size) * 100) : 0);
             meta.textContent = `${formatSize(bytes)} / ${formatSize(file.size)}`;
         },
     };
@@ -120,17 +124,25 @@ function createProgressView(els, files) {
             rows[index].setStatus('sending');
         },
         fileBytes(index, bytes) {
+            // Un morceau réessayé repart de zéro : la progression affichée ne recule pas
+            if (bytes <= sentPerFile[index]) return;
             sentPerFile[index] = bytes;
             rows[index].setBytes(bytes);
             meter.add(sentPerFile.reduce((sum, value) => sum + value, 0));
             if (frame === null) frame = requestAnimationFrame(render);
         },
         fileSent(index) {
+            sentPerFile[index] = files[index].size;
+            rows[index].setBytes(files[index].size);
+            if (files[index].size === 0) setBar(rows[index].bar, rows[index].fill, 100);
             rows[index].setStatus('sent');
         },
-        finishing() {
+        cancel() {
             if (frame !== null) cancelAnimationFrame(frame);
             frame = null;
+        },
+        finishing() {
+            this.cancel();
             setBar(els.progressBar, els.progressFill, 100);
             rows.forEach(row => row.setStatus('checking'));
             els.progressText.textContent = 'Vérification des fichiers sur le serveur…';

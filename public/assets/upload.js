@@ -147,11 +147,13 @@ async function submitUpload(els, selection, apiBase) {
     const session = { apiBase, token: els.form.dataset.uploadToken, openIds: [] };
 
     setSending(els, selection, true);
-    const view = createProgressView(els, files);
+    let view = null;
     let result;
     try {
+        view = createProgressView(els, files);
         result = await runUpload(files, readShareOptions(els.form), session, view);
     } catch (error) {
+        view?.cancel();
         setSending(els, selection, false);
         showError(els, error.message);
         console.error('Upload échoué :', error);

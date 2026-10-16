@@ -115,8 +115,8 @@ if (!Auth::check()) {
                          aria-label="Progression totale" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
                         <div id="progress-fill" class="progress-fill"></div>
                     </div>
-                    <p id="progress-text" class="progress-text">Préparation…</p>
-                    <ul id="progress-files" class="progress-files"></ul>
+                    <p id="progress-text" class="progress-text" role="status">Préparation…</p>
+                    <ul id="progress-files" class="progress-files" aria-live="polite"></ul>
                 </div>
 
                 <!-- Résultat -->
