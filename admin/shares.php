@@ -16,6 +16,12 @@ if (!Auth::check()) {
 $shares = Share::all();
 $totalSize = array_sum(array_map(fn(array $share) => (int) ($share['total_size'] ?? 0), $shares));
 $totalFiles = array_sum(array_column($shares, 'file_count'));
+$deletedCount = isset($_GET['deleted']) ? (int) $_GET['deleted'] : null;
+$bulkError = match ($_GET['error'] ?? null) {
+    'session' => 'Session expirée, réessayez.',
+    'selection' => 'Aucun partage sélectionné.',
+    default => null,
+};
 
 ?>
 <!DOCTYPE html>
@@ -52,6 +58,14 @@ $totalFiles = array_sum(array_column($shares, 'file_count'));
                 </a>
             </div>
 
+            <?php if ($bulkError !== null): ?>
+                <div class="alert alert-error" role="alert"><?= htmlspecialchars($bulkError) ?></div>
+            <?php elseif ($deletedCount !== null): ?>
+                <div class="alert alert-success" role="status">
+                    <?= $deletedCount ?> partage<?= $deletedCount > 1 ? 's supprimés' : ' supprimé' ?>.
+                </div>
+            <?php endif; ?>
+
             <?php if (empty($shares)): ?>
                 <div class="empty-state">
                     <p>Aucun partage pour le moment.</p>
@@ -60,9 +74,20 @@ $totalFiles = array_sum(array_column($shares, 'file_count'));
                     </a>
                 </div>
             <?php else: ?>
+                <form method="POST" action="<?= BASE_URL ?>/admin/shares-delete" id="bulk-form">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Auth::generateCsrfToken()) ?>">
+                <div class="bulk-bar">
+                    <button type="submit" class="btn btn-danger btn-sm" id="bulk-delete" disabled>
+                        Supprimer la sélection
+                    </button>
+                    <span class="text-muted" id="bulk-count" aria-live="polite"></span>
+                </div>
                 <table class="table">
                     <thead>
                         <tr>
+                            <th class="col-check">
+                                <input type="checkbox" id="select-all" aria-label="Tout sélectionner">
+                            </th>
                             <th>Titre / Slug</th>
                             <th>Fichiers</th>
                             <th>Taille</th>
@@ -76,6 +101,10 @@ $totalFiles = array_sum(array_column($shares, 'file_count'));
                     <tbody>
                         <?php foreach ($shares as $share): ?>
                             <tr class="<?= $share['status'] === 'paused' ? 'row-muted' : '' ?>">
+                                <td class="col-check">
+                                    <input type="checkbox" name="share_ids[]" value="<?= (int) $share['id'] ?>"
+                                           class="row-check" aria-label="Sélectionner <?= htmlspecialchars($share['title'] ?: $share['slug']) ?>">
+                                </td>
                                 <td>
                                     <?php if ($share['title']): ?>
                                         <strong><?= htmlspecialchars($share['title']) ?></strong><br>
@@ -113,6 +142,7 @@ $totalFiles = array_sum(array_column($shares, 'file_count'));
                     </tbody>
                     <tfoot>
                         <tr class="table-total">
+                            <td></td>
                             <td><?= count($shares) ?> partage<?= count($shares) > 1 ? 's' : '' ?></td>
                             <td><?= (int) $totalFiles ?></td>
                             <td><?= File::formatSize($totalSize) ?></td>
@@ -120,10 +150,12 @@ $totalFiles = array_sum(array_column($shares, 'file_count'));
                         </tr>
                     </tfoot>
                 </table>
+                </form>
             <?php endif; ?>
         </main>
     </div>
 
     <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/app.js"></script>
+    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/shares.js?v=<?= filemtime(ROOT_PATH . '/public/assets/shares.js') ?>"></script>
 </body>
 </html>
