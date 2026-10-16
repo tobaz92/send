@@ -21,6 +21,8 @@
     --success: #28a745;
     --warning: #ffc107;
     --radius: 4px;
+    /* Fond des pages publiques le temps que l'image de fond charge */
+    --backdrop: #111;
 }
 
 body {
@@ -287,8 +289,8 @@ input:focus, textarea:focus, select:focus {
 .login-box {
     background: var(--bg);
     padding: 32px;
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .login-box h1 { text-align: center; margin-bottom: 4px; }
@@ -471,8 +473,8 @@ input:focus, textarea:focus, select:focus {
 .download-box {
     background: var(--bg);
     padding: 32px;
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     width: 100%;
     max-width: 480px;
 }
@@ -565,7 +567,7 @@ input:focus, textarea:focus, select:focus {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background: #111;
+    background: var(--backdrop);
 }
 
 /* La durée doit rester égale à WALLPAPER_FADE_MS (wallpaper-rotator.js) */
@@ -585,28 +587,37 @@ input:focus, textarea:focus, select:focus {
     .page-wallpaper { transition: none; }
 }
 
-.has-wallpaper { background: #111; }
-.has-wallpaper .download-box { box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
-.has-wallpaper .public-footer { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+.has-wallpaper { background: var(--backdrop); }
 
-.promo-card {
-    margin: 0 24px 24px;
-    padding: 14px 18px;
-    background: rgba(255,255,255,0.94);
+/* Sur une image quelconque, le texte n'est lisible que sur une surface pleine */
+.has-wallpaper .public-footer p {
+    display: inline-block;
+    margin: 0;
+    padding: 4px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    font-size: 14px;
 }
 
-.promo-card h1 { font-size: 1.15rem; margin: 0 0 6px; }
-.promo-card p { margin: 0 0 6px; }
+.promo-card {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.promo-card h1 { font-size: 1rem; margin: 0 0 8px; }
+.promo-card p { margin: 0 0 8px; }
 .promo-card > :last-child { margin-bottom: 0; }
 .promo-card a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
-.promo-card a:hover { color: #000; }
+.promo-card a:hover { color: var(--primary-hover); }
 
 @media (min-width: 900px) {
     .has-wallpaper .download-container { align-items: flex-start; padding: 48px 64px; }
-    .promo-card { position: fixed; right: 32px; bottom: 32px; max-width: 320px; margin: 0; }
+    .promo-card { position: fixed; right: 32px; bottom: 32px; width: auto; max-width: 320px; margin: 0; }
 }
 
 .branding-page { max-width: 1400px; }
