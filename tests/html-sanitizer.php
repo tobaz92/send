@@ -21,6 +21,7 @@ $cases = [
  'span déballé' => ['<p><span style="x">t</span></p>', '<p>t</p>'],
  'vide' => ['   ', ''],
  'br' => ['<p>a<br>b</p>', '<p>a<br>b</p>'],
+ 'identifiants dans l\'URL' => ['<a href="https://banque.fr@pirate.com">x</a>', 'x'],
  'mutation noscript' => ['<noscript><p title="</noscript><img src=x onerror=alert(1)>"></noscript>', ''],
 ];
 $fail = 0;

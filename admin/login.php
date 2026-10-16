@@ -69,7 +69,7 @@ $csrfToken = Auth::generateCsrfToken();
 
             <?php if ($blocked): ?>
                 <div class="alert alert-error">
-                    Trop de tentatives. Réessayez dans <span id="countdown"><?= $blockTime ?></span> secondes.
+                    Trop de tentatives. Réessayez dans <span id="countdown" data-seconds="<?= (int) $blockTime ?>"><?= (int) $blockTime ?></span> secondes.
                 </div>
             <?php elseif ($error): ?>
                 <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
@@ -109,18 +109,7 @@ $csrfToken = Auth::generateCsrfToken();
     </div>
 
     <?php if ($blocked): ?>
-    <script>
-        let countdown = <?= (int)$blockTime ?>;
-        const el = document.getElementById('countdown');
-        const interval = setInterval(() => {
-            countdown--;
-            el.textContent = countdown;
-            if (countdown <= 0) {
-                clearInterval(interval);
-                location.reload();
-            }
-        }, 1000);
-    </script>
+    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/countdown.js?v=<?= filemtime(ROOT_PATH . '/public/assets/countdown.js') ?>"></script>
     <?php endif; ?>
 </body>
 </html>

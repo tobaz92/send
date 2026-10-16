@@ -84,8 +84,13 @@ class Branding
 
         self::ensureDir();
         $added = [];
-        foreach ($uploads as $index => $file) {
-            $added[] = self::storeUpload($file, $extensions[$index]);
+        try {
+            foreach ($uploads as $index => $file) {
+                $added[] = self::storeUpload($file, $extensions[$index]);
+            }
+        } catch (Throwable $e) {
+            array_walk($added, [self::class, 'deleteStored']);
+            throw $e;
         }
 
         Settings::set(self::KEY_WALLPAPERS, json_encode(array_merge($kept, $added)));

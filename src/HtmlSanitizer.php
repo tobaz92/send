@@ -56,7 +56,9 @@ class HtmlSanitizer
 
     public static function plainText(string $html): string
     {
-        return trim(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // trim() ignore les espaces Unicode : une suite d'insécables compterait comme du texte
+        return preg_replace('/^[\p{Z}\s]+|[\p{Z}\s]+$/u', '', $text) ?? '';
     }
 
     private static function copyChildren(DOMNode $from, DOMNode $to, DOMDocument $target, bool $insideBlock): void
@@ -115,8 +117,13 @@ class HtmlSanitizer
         if ($href === '' || strlen($href) > 500 || filter_var($href, FILTER_VALIDATE_URL) === false) {
             return null;
         }
-        $scheme = strtolower((string) parse_url($href, PHP_URL_SCHEME));
-        if (!in_array($scheme, ['http', 'https'], true) || parse_url($href, PHP_URL_HOST) === null) {
+        $parts = parse_url($href);
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        if (!in_array($scheme, ['http', 'https'], true) || !isset($parts['host'])) {
+            return null;
+        }
+        // https://banque.fr@pirate.com : l'adresse affichée tromperait le visiteur
+        if (isset($parts['user']) || isset($parts['pass'])) {
             return null;
         }
         return $href;
