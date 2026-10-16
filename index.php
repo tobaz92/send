@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 // Pour le serveur PHP intégré : servir les fichiers statiques directement
 if (PHP_SAPI === 'cli-server') {
-    $uri = $_SERVER['REQUEST_URI'];
-    $file = __DIR__ . parse_url($uri, PHP_URL_PATH);
+    $uriPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
+    $file = __DIR__ . $uriPath;
 
-    // Servir les assets statiques directement
-    if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2)$/', $uri) && file_exists($file)) {
+    // Servir les assets statiques directement (le ?v= de cache-busting est hors du chemin)
+    if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2)$/', $uriPath) && file_exists($file)) {
         return false;
     }
 }
