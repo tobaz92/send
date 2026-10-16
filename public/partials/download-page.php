@@ -85,9 +85,9 @@ $wallpaperUrls = Branding::wallpaperUrls();
         <footer class="public-footer">
             <p>Partagé via <strong>Send</strong></p>
         </footer>
-
-        <?php require ROOT_PATH . '/public/partials/branding.php'; ?>
     </div>
+
+    <?php require ROOT_PATH . '/public/partials/branding.php'; ?>
 
     <?php if ($page['password'] !== null && $page['password']['blocked']): ?>
         <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/countdown.js?v=<?= filemtime(ROOT_PATH . '/public/assets/countdown.js') ?>"></script>
