@@ -44,6 +44,8 @@ $routes = [
     // Hors de /admin/upload/ : avec MultiViews (OVH), /admin/upload/x serait servi par admin/upload.php
     'POST /admin/api/upload/(start|chunk|finish|cancel)' => ['admin/upload-api.php', 'auth-json'],
     'GET /admin/shares' => ['admin/shares.php', 'auth'],
+    // Pas sous /admin/shares/ : avec MultiViews (OVH), ce chemin serait servi par admin/shares.php
+    'POST /admin/shares-delete' => ['admin/shares-delete.php', 'auth'],
     'GET /admin/branding' => ['admin/branding.php', 'auth'],
     'POST /admin/branding' => ['admin/branding.php', 'auth'],
     'GET /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],

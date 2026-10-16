@@ -164,6 +164,9 @@ input:focus, textarea:focus, select:focus {
 
 .table tr:hover td { background: var(--bg-alt); }
 .table tfoot .table-total td { font-weight: 600; border-top: 2px solid var(--border); background: var(--bg-alt); }
+.table .col-check { width: 36px; }
+.table .col-check input { width: auto; }
+.bulk-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .row-muted { opacity: 0.6; }
 .user-agent { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
 
