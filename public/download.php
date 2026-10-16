@@ -104,9 +104,9 @@ $totalSize = File::getTotalSize($share['id']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($share['title'] ?: 'Téléchargement') ?> - Send</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL) ?>/public/assets/style.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL) ?>/public/assets/style.css?v=<?= filemtime(ROOT_PATH . '/public/assets/style.css') ?>">
 </head>
-<body class="public-page">
+<body class="public-page<?= Branding::wallpaperUrl() !== null ? ' has-wallpaper' : '' ?>">
     <div class="download-container">
         <div class="download-box">
             <div class="download-header">
@@ -176,6 +176,8 @@ $totalSize = File::getTotalSize($share['id']);
         <footer class="public-footer">
             <p>Partagé via <strong>Send</strong></p>
         </footer>
+
+        <?php require ROOT_PATH . '/public/partials/branding.php'; ?>
     </div>
 
     <?php if ($passwordBlocked): ?>

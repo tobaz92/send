@@ -39,7 +39,8 @@ setup_app() {
         $c = file_get_contents($argv[1]);
         $c = str_replace("CHANGEZ_MOI_avec_une_cle_unique", bin2hex(random_bytes(32)), $c);
         $c = str_replace("define(\x27ADMIN_USERNAME\x27, \x27CHANGEZ_MOI\x27)", "define(\x27ADMIN_USERNAME\x27, \x27" . $argv[3] . "\x27)", $c);
-        $c = preg_replace("/define\(\x27ADMIN_PASSWORD_HASH\x27, \x27[^\x27]*\x27\)/", "define(\x27ADMIN_PASSWORD_HASH\x27, " . var_export($argv[2], true) . ")", $c);
+        // Callback et non chaîne de remplacement : un « $3 » du hash y serait lu comme référence arrière
+        $c = preg_replace_callback("/define\(\x27ADMIN_PASSWORD_HASH\x27, \x27[^\x27]*\x27\)/", fn() => "define(\x27ADMIN_PASSWORD_HASH\x27, " . var_export($argv[2], true) . ")", $c);
         file_put_contents($argv[4], $c);
     ' "$APP/config.example.php" "$hash" "$TEST_USER" "$APP/config.php"
 }
@@ -71,7 +72,13 @@ login() {
     page="$(curl -s -c "$JAR" -b "$JAR" "$BASE/admin/upload")"
     CSRF="$(csrf_from <<<"$page")"
     UPLOAD_TOKEN="$(sed -n 's/.*data-upload-token="\([a-f0-9]*\)".*/\1/p' <<<"$page" | head -1)"
-    [[ -n "$CSRF" && -n "$UPLOAD_TOKEN" ]] || { echo "login échoué" >&2; exit 1; }
+    if [[ -z "$CSRF" || -z "$UPLOAD_TOKEN" ]]; then
+        echo "login échoué (jeton de login: ${token:-vide})" >&2
+        grep -o 'alert[^<]*<[^<]*' <<<"$page" >&2 || true
+        sqlite3 "$APP/storage/database.sqlite" 'SELECT action, ip, details FROM audit_logs' >&2 || true
+        tail -5 "$WORK/server.log" >&2
+        exit 1
+    fi
 }
 
 check() {

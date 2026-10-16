@@ -92,6 +92,7 @@ code { background: var(--bg-alt); padding: 2px 6px; border-radius: 3px; font-siz
 input[type="text"],
 input[type="password"],
 input[type="email"],
+input[type="url"],
 textarea,
 select {
     width: 100%;
@@ -507,4 +508,48 @@ input:focus, textarea:focus, select:focus {
 
     .action-buttons { flex-direction: column; }
     .action-buttons .btn { width: 100%; }
+}
+
+/* Personnalisation : image de fond et encart des pages publiques */
+.page-wallpaper {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+}
+
+.has-wallpaper { background: #111; }
+.has-wallpaper .download-box { box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
+.has-wallpaper .public-footer { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6); }
+
+.promo-card {
+    margin: 0 24px 24px;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.94);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    font-size: 14px;
+}
+
+.promo-card p { margin: 0; }
+.promo-card a { display: block; color: var(--text); }
+.promo-card a:hover { text-decoration: none; }
+.promo-host { display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted); }
+.promo-card a:hover .promo-host { color: var(--text); }
+
+@media (min-width: 900px) {
+    .has-wallpaper .download-container { align-items: flex-start; padding: 48px 64px; }
+    .promo-card { position: fixed; right: 32px; bottom: 32px; max-width: 320px; margin: 0; }
+}
+
+.branding-preview {
+    display: block;
+    max-width: 320px;
+    max-height: 180px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
 }
