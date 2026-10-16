@@ -81,6 +81,7 @@ $bulkError = match ($_GET['error'] ?? null) {
                         Supprimer la sélection
                     </button>
                     <span class="text-muted" id="bulk-count" aria-live="polite"></span>
+                    <span class="text-muted bulk-hint">Maj + clic pour cocher une plage</span>
                 </div>
                 <table class="table">
                     <thead>
