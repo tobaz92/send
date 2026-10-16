@@ -52,10 +52,11 @@ function brandingHandlePost(): void
     }
 
     $promoHtml = Branding::normalizePromo((string) ($_POST['promo_html'] ?? ''));
+    $promoAlign = Branding::normalizeAlign((string) ($_POST['promo_align'] ?? 'left'));
     $toRemove = array_filter((array) ($_POST['remove_wallpapers'] ?? []), [Branding::class, 'isStoredName']);
 
     Branding::updateWallpapers(array_values($toRemove), brandingUploadedWallpapers());
-    Branding::savePromo($promoHtml);
+    Branding::savePromo($promoHtml, $promoAlign);
 }
 
 $error = '';
@@ -77,6 +78,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $wallpapers = Branding::wallpapers();
 // Après une erreur, l'encart saisi n'est pas perdu (il sera re-nettoyé à l'envoi suivant)
 $promoHtml = $error !== '' ? HtmlSanitizer::sanitize((string) ($_POST['promo_html'] ?? '')) : Branding::promoHtml();
+$promoAlign = $error !== '' && in_array($_POST['promo_align'] ?? '', Branding::PROMO_ALIGNMENTS, true)
+    ? (string) $_POST['promo_align']
+    : Branding::promoAlign();
+$alignOptions = [
+    'left' => ['Gauche', 'Aligner à gauche'],
+    'center' => ['Centre', 'Centrer'],
+    'right' => ['Droite', 'Aligner à droite'],
+];
 $csrfToken = Auth::generateCsrfToken();
 $asset = fn(string $file) => BASE_URL . '/public/assets/' . $file . '?v=' . filemtime(ROOT_PATH . '/public/assets/' . $file);
 
@@ -151,10 +160,17 @@ $asset = fn(string $file) => BASE_URL . '/public/assets/' . $file . '?v=' . file
                                 <button type="button" class="btn btn-sm" data-command="bold" title="Gras"><strong>G</strong></button>
                                 <button type="button" class="btn btn-sm" data-command="link" title="Lien">Lien</button>
                                 <button type="button" class="btn btn-sm" data-command="unlink" title="Retirer le lien">Sans lien</button>
+                                <span class="editor-toolbar-separator" aria-hidden="true"></span>
+                                <?php foreach ($alignOptions as $value => [$label, $title]): ?>
+                                    <button type="button" class="btn btn-sm" data-align="<?= $value ?>"
+                                            aria-pressed="<?= $value === $promoAlign ? 'true' : 'false' ?>"
+                                            title="<?= $title ?>"><?= $label ?></button>
+                                <?php endforeach; ?>
                             </div>
-                            <div class="editor-area" contenteditable="true" role="textbox" aria-multiline="true"
+                            <div class="editor-area promo-align-<?= $promoAlign ?>" contenteditable="true" role="textbox" aria-multiline="true"
                                  aria-label="Texte de l'encart"><?= $promoHtml ?></div>
                             <input type="hidden" name="promo_html" value="">
+                            <input type="hidden" name="promo_align" value="<?= $promoAlign ?>">
                         </div>
                         <p class="text-muted">Laisser vide pour masquer l'encart.</p>
                     </div>

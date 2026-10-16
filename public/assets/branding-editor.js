@@ -34,9 +34,24 @@ function runEditorCommand(area, command) {
     }
 }
 
+function bindAlignment(editor, area) {
+    const field = editor.querySelector('input[name="promo_align"]');
+    const buttons = [...editor.querySelectorAll('[data-align]')];
+    buttons.forEach(button => {
+        button.addEventListener('click', () => {
+            field.value = button.dataset.align;
+            buttons.forEach(other => other.setAttribute('aria-pressed', String(other === button)));
+            // Mêmes classes que le bandeau public : l'éditeur montre l'alignement réel
+            area.classList.remove('promo-align-left', 'promo-align-center', 'promo-align-right');
+            area.classList.add(`promo-align-${button.dataset.align}`);
+        });
+    });
+}
+
 function initEditor(editor) {
     const area = editor.querySelector('.editor-area');
     const field = editor.querySelector('input[name="promo_html"]');
+    bindAlignment(editor, area);
     document.execCommand('defaultParagraphSeparator', false, 'p');
 
     editor.querySelectorAll('[data-command]').forEach(button => {
