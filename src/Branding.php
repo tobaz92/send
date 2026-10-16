@@ -105,7 +105,11 @@ class Branding
      */
     public static function normalizePromo(string $text, string $url): array
     {
-        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? '');
+        $collapsed = preg_replace('/\s+/u', ' ', $text);
+        if ($collapsed === null) {
+            throw new Exception('Texte invalide (encodage).');
+        }
+        $text = trim($collapsed);
         $url = trim($url);
 
         if (mb_strlen($text) > self::MAX_PROMO_TEXT_LENGTH) {

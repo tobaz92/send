@@ -9,15 +9,19 @@ require_once __DIR__ . '/../src/bootstrap.php';
 
 const WALLPAPER_CACHE_SECONDS = 2592000;
 
+// Lecture seule : inutile de garder le verrou de session pendant l'envoi de l'image
+session_write_close();
+
 $wallpaper = Branding::wallpaperFile();
-if ($wallpaper === null) {
+$size = $wallpaper === null ? false : filesize($wallpaper['path']);
+if ($size === false) {
     http_response_code(404);
     exit;
 }
 
 // L'URL change avec l'image (?v=), le navigateur peut la garder longtemps
 header('Content-Type: ' . $wallpaper['mime']);
-header('Content-Length: ' . filesize($wallpaper['path']));
+header('Content-Length: ' . $size);
 header('Content-Disposition: inline');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: public, max-age=' . WALLPAPER_CACHE_SECONDS . ', immutable');

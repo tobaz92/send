@@ -5,6 +5,12 @@
 
 declare(strict_types=1);
 
+// Partiel inclus par une page publique, jamais appelé seul par URL
+if (!defined('SEND_BOOTSTRAPPED')) {
+    http_response_code(404);
+    exit;
+}
+
 $brandingWallpaperUrl = Branding::wallpaperUrl();
 $brandingPromo = Branding::current();
 ?>
