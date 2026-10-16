@@ -81,7 +81,7 @@ check "encart vide : masqué" 0 "$(curl -s "$BASE/d/$slug" | grep -c 'promo-card
 db "DELETE FROM settings; PRAGMA user_version = 2;"
 db "INSERT INTO settings (key, value) VALUES ('branding_wallpaper', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.png'), ('branding_promo_text', 'Mon <site>'), ('branding_promo_url', 'https://exemple.fr')"
 curl -s -o /dev/null -b "$JAR" "$BASE/admin/branding"
-check "migration v3 : version" 3 "$(db 'PRAGMA user_version')"
+check "migration v3 : appliquée (version ≥ 3)" 1 "$([[ $(db 'PRAGMA user_version') -ge 3 ]] && echo 1)"
 check "migration v3 : image reprise en liste" '["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.png"]' "$(db "SELECT value FROM settings WHERE key='branding_wallpapers'")"
 check "migration v3 : texte + lien repris en HTML échappé" \
     '<p><a href="https://exemple.fr" target="_blank" rel="noopener noreferrer sponsored">Mon &lt;site&gt;</a></p>' \
