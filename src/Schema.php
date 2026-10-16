@@ -13,6 +13,7 @@ class Schema
     private const MIGRATIONS = [
         1 => 'createUploadTables',
         2 => 'createSettingsTable',
+        3 => 'migrateBrandingToLists',
     ];
 
     public static function migrate(PDO $db): void
@@ -62,5 +63,38 @@ class Schema
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ");
+    }
+
+    /**
+     * Image unique → liste d'images ; texte + lien → HTML de l'encart
+     */
+    private static function migrateBrandingToLists(PDO $db): void
+    {
+        $read = $db->prepare('SELECT value FROM settings WHERE key = ?');
+        $value = function (string $key) use ($read): ?string {
+            $read->execute([$key]);
+            $found = $read->fetchColumn();
+            return $found === false ? null : (string) $found;
+        };
+        $write = $db->prepare(
+            'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value'
+        );
+
+        $wallpaper = $value('branding_wallpaper');
+        if ($wallpaper !== null) {
+            $write->execute(['branding_wallpapers', json_encode([$wallpaper])]);
+        }
+
+        $text = $value('branding_promo_text') ?? '';
+        $url = $value('branding_promo_url') ?? '';
+        if ($text !== '') {
+            $escapedText = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+            $inner = $url === ''
+                ? $escapedText
+                : '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">' . $escapedText . '</a>';
+            $write->execute(['branding_promo_html', HtmlSanitizer::sanitize('<p>' . $inner . '</p>')]);
+        }
+
+        $db->exec("DELETE FROM settings WHERE key IN ('branding_wallpaper', 'branding_promo_text', 'branding_promo_url')");
     }
 }

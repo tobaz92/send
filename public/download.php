@@ -90,109 +90,30 @@ if ($passwordRequired) {
     }
 }
 
+$filesVisible = !$passwordRequired || $passwordValid;
+$shareBase = BASE_URL . '/d/' . rawurlencode($slug);
 $files = [];
-if (!$passwordRequired || $passwordValid) {
-    $files = File::getByShareId($share['id']);
+if ($filesVisible) {
+    foreach (File::getByShareId($share['id']) as $file) {
+        $files[] = [
+            'name' => $file['original_name'],
+            'size' => (int) $file['size'],
+            'href' => $shareBase . '/file/' . (int) $file['id'],
+        ];
+    }
 }
 
-$totalSize = File::getTotalSize($share['id']);
+$page = [
+    'title' => $share['title'],
+    'files_visible' => $filesVisible,
+    'files' => $files,
+    'total_size' => File::getTotalSize($share['id']),
+    'zip_href' => count($files) > 1 ? $shareBase . '/zip' : null,
+    'password' => $filesVisible ? null : [
+        'blocked' => $passwordBlocked,
+        'block_time' => (int) $passwordBlockTime,
+        'error' => $passwordError,
+    ],
+];
 
-?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($share['title'] ?: 'Téléchargement') ?> - Send</title>
-    <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL) ?>/public/assets/style.css?v=<?= filemtime(ROOT_PATH . '/public/assets/style.css') ?>">
-</head>
-<body class="public-page<?= Branding::wallpaperUrl() !== null ? ' has-wallpaper' : '' ?>">
-    <div class="download-container">
-        <div class="download-box">
-            <div class="download-header">
-                <h1><?= htmlspecialchars($share['title'] ?: 'Fichiers partagés') ?></h1>
-                <?php if (!$passwordRequired || $passwordValid): ?>
-                    <p class="file-info">
-                        <?= count($files) ?> fichier<?= count($files) > 1 ? 's' : '' ?>
-                        &bull; <?= File::formatSize($totalSize) ?>
-                    </p>
-                <?php endif; ?>
-            </div>
-
-            <?php if ($passwordRequired && !$passwordValid): ?>
-                <!-- Formulaire mot de passe -->
-                <div class="password-form">
-                    <p>Ce partage est protégé par un mot de passe.</p>
-
-                    <?php if ($passwordBlocked): ?>
-                        <div class="alert alert-error">
-                            Trop de tentatives. Réessayez dans <span id="countdown"><?= (int)$passwordBlockTime ?></span> secondes.
-                        </div>
-                    <?php elseif ($passwordError): ?>
-                        <div class="alert alert-error"><?= htmlspecialchars($passwordError) ?></div>
-                    <?php endif; ?>
-
-                    <form method="POST" <?= $passwordBlocked ? 'style="display:none"' : '' ?>>
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Auth::generateCsrfToken()) ?>">
-                        <div class="form-group">
-                            <input type="password"
-                                   name="password"
-                                   placeholder="Mot de passe"
-                                   required
-                                   autofocus>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">
-                            Accéder aux fichiers
-                        </button>
-                    </form>
-                </div>
-            <?php else: ?>
-                <!-- Liste des fichiers -->
-                <?php if (count($files) > 1): ?>
-                    <a href="<?= BASE_URL ?>/d/<?= htmlspecialchars($slug) ?>/zip"
-                       class="btn btn-primary btn-block btn-download-all">
-                        Tout télécharger (ZIP)
-                    </a>
-                <?php endif; ?>
-
-                <ul class="file-list-public">
-                    <?php foreach ($files as $file): ?>
-                        <li>
-                            <a href="<?= BASE_URL ?>/d/<?= htmlspecialchars($slug) ?>/file/<?= $file['id'] ?>"
-                               class="file-item">
-                                <span class="file-name"><?= htmlspecialchars($file['original_name']) ?></span>
-                                <span class="file-size"><?= File::formatSize($file['size']) ?></span>
-                            </a>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-
-                <?php if (empty($files)): ?>
-                    <p class="text-muted text-center">Aucun fichier disponible.</p>
-                <?php endif; ?>
-            <?php endif; ?>
-        </div>
-
-        <footer class="public-footer">
-            <p>Partagé via <strong>Send</strong></p>
-        </footer>
-
-        <?php require ROOT_PATH . '/public/partials/branding.php'; ?>
-    </div>
-
-    <?php if ($passwordBlocked): ?>
-    <script>
-        let countdown = <?= (int)$passwordBlockTime ?>;
-        const el = document.getElementById('countdown');
-        const interval = setInterval(() => {
-            countdown--;
-            el.textContent = countdown;
-            if (countdown <= 0) {
-                clearInterval(interval);
-                location.reload();
-            }
-        }, 1000);
-    </script>
-    <?php endif; ?>
-</body>
-</html>
+require ROOT_PATH . '/public/partials/download-page.php';
