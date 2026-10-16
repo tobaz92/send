@@ -14,6 +14,8 @@ if (!Auth::check()) {
 }
 
 $shares = Share::all();
+$totalSize = array_sum(array_map(fn(array $share) => (int) ($share['total_size'] ?? 0), $shares));
+$totalFiles = array_sum(array_column($shares, 'file_count'));
 
 ?>
 <!DOCTYPE html>
@@ -39,7 +41,12 @@ $shares = Share::all();
 
         <main class="admin-main">
             <div class="page-header">
-                <h1>Partages</h1>
+                <div>
+                    <h1>Partages</h1>
+                    <?php if (!empty($shares)): ?>
+                        <p class="text-muted">Espace occupé : <strong><?= File::formatSize($totalSize) ?></strong></p>
+                    <?php endif; ?>
+                </div>
                 <a href="<?= BASE_URL ?>/admin/upload" class="btn btn-primary">
                     + Nouveau partage
                 </a>
@@ -104,6 +111,14 @@ $shares = Share::all();
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
+                    <tfoot>
+                        <tr class="table-total">
+                            <td><?= count($shares) ?> partage<?= count($shares) > 1 ? 's' : '' ?></td>
+                            <td><?= (int) $totalFiles ?></td>
+                            <td><?= File::formatSize($totalSize) ?></td>
+                            <td colspan="5"></td>
+                        </tr>
+                    </tfoot>
                 </table>
             <?php endif; ?>
         </main>
