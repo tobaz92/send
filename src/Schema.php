@@ -14,6 +14,7 @@ class Schema
         1 => 'createUploadTables',
         2 => 'createSettingsTable',
         3 => 'migrateBrandingToLists',
+        4 => 'removeAdminStats',
     ];
 
     public static function migrate(PDO $db): void
@@ -96,5 +97,16 @@ class Schema
         }
 
         $db->exec("DELETE FROM settings WHERE key IN ('branding_wallpaper', 'branding_promo_text', 'branding_promo_url')");
+    }
+
+    /**
+     * Retire des statistiques les vues et téléchargements venus d'une IP de
+     * connexion admin, désormais exclus à l'enregistrement (AdminVisitor)
+     */
+    private static function removeAdminStats(PDO $db): void
+    {
+        $adminIps = "SELECT ip FROM audit_logs WHERE action = 'login_success' AND ip IS NOT NULL";
+        $db->exec("DELETE FROM views WHERE ip IN ({$adminIps})");
+        $db->exec("DELETE FROM downloads WHERE ip IN ({$adminIps})");
     }
 }
