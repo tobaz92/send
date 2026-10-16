@@ -32,6 +32,7 @@ $shares = Share::all();
                 <a href="<?= BASE_URL ?>/admin" class="nav-link">Dashboard</a>
                 <a href="<?= BASE_URL ?>/admin/upload" class="nav-link">Nouveau</a>
                 <a href="<?= BASE_URL ?>/admin/shares" class="nav-link active">Partages</a>
+                <a href="<?= BASE_URL ?>/admin/branding" class="nav-link">Personnalisation</a>
                 <form method="POST" action="<?= BASE_URL ?>/admin/logout" style="display:inline"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(Auth::generateCsrfToken()) ?>"><button type="submit" class="nav-link" style="background:none;border:none;cursor:pointer">Déconnexion</button></form>
             </div>
         </nav>
