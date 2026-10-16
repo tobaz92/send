@@ -56,19 +56,8 @@ if (!file_exists($filePath)) {
     exit('Fichier non trouvé sur le serveur.');
 }
 
-// Enregistrer le téléchargement
-Database::insert('downloads', [
-    'share_id' => $share['id'],
-    'file_id' => $file['id'],
-    'ip' => $ip,
-    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null
-]);
-
-// Log pour rate limiting
-Security::logAction('download', $share['id'], $file['id']);
-
-// Envoyer la notification email
-Mailer::notifyDownload($share, $file);
+// Statistiques, rate limiting et notification (rien pour l'admin)
+DownloadRecorder::record($share, $file, $ip);
 
 // Headers sécurisés pour le téléchargement (RFC 5987)
 $safeName = preg_replace('/[^\p{L}\p{N}\s\-_\.]/u', '', $file['original_name']);

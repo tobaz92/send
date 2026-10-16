@@ -48,19 +48,8 @@ if (empty($files)) {
     exit('Aucun fichier à télécharger.');
 }
 
-// Enregistrer le téléchargement
-Database::insert('downloads', [
-    'share_id' => $share['id'],
-    'file_id' => null, // null = ZIP complet
-    'ip' => $ip,
-    'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null
-]);
-
-// Log pour rate limiting
-Security::logAction('download', $share['id'], null);
-
-// Envoyer la notification email
-Mailer::notifyDownload($share, null);
+// Statistiques, rate limiting et notification (rien pour l'admin)
+DownloadRecorder::record($share, null, $ip);
 
 // Créer le ZIP à la volée
 $zipName = ($share['title'] ?: $share['slug']) . '.zip';
