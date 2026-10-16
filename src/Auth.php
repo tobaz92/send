@@ -241,12 +241,21 @@ class Auth
     }
 
     /**
-     * Vérifie un token CSRF sans le renouveler : un upload découpé enchaîne
-     * des dizaines de requêtes avec le même jeton.
+     * Jeton CSRF propre à l'upload découpé : un upload enchaîne des dizaines de
+     * requêtes, et le jeton général est renouvelé par tout formulaire admin
+     * soumis dans un autre onglet.
      */
-    public static function verifyCsrfTokenKeep(string $token): bool
+    public static function generateUploadToken(): string
     {
-        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+        if (empty($_SESSION['upload_csrf_token'])) {
+            $_SESSION['upload_csrf_token'] = bin2hex(random_bytes(32));
+        }
+        return $_SESSION['upload_csrf_token'];
+    }
+
+    public static function verifyUploadToken(string $token): bool
+    {
+        return isset($_SESSION['upload_csrf_token']) && hash_equals($_SESSION['upload_csrf_token'], $token);
     }
 
     /**

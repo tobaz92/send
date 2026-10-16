@@ -62,8 +62,11 @@ login() {
     curl -s -o /dev/null -c "$JAR" -b "$JAR" \
         --data-urlencode "csrf_token=$token" --data-urlencode "username=$TEST_USER" \
         --data-urlencode "password=$TEST_PASS" "$BASE/admin/login"
-    CSRF="$(curl -s -c "$JAR" -b "$JAR" "$BASE/admin/upload" | csrf_from)"
-    [[ -n "$CSRF" ]] || { echo "login échoué" >&2; exit 1; }
+    local page
+    page="$(curl -s -c "$JAR" -b "$JAR" "$BASE/admin/upload")"
+    CSRF="$(csrf_from <<<"$page")"
+    UPLOAD_TOKEN="$(sed -n 's/.*data-upload-token="\([a-f0-9]*\)".*/\1/p' <<<"$page" | head -1)"
+    [[ -n "$CSRF" && -n "$UPLOAD_TOKEN" ]] || { echo "login échoué" >&2; exit 1; }
 }
 
 check() {
@@ -97,7 +100,7 @@ jget() {
 
 api() {
     local action="$1"; shift
-    curl -s -b "$JAR" -H "X-CSRF-Token: $CSRF" -w '\n%{http_code}' "$@" "$BASE/admin/upload/$action"
+    curl -s -b "$JAR" -H "X-CSRF-Token: $UPLOAD_TOKEN" -w '\n%{http_code}' "$@" "$BASE/admin/upload/$action"
 }
 
 body_of() { sed '$d' <<<"$1"; }

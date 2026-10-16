@@ -96,13 +96,21 @@ class ChunkUpload
     public static function claim(string $id): array
     {
         $upload = self::find($id);
-        $claimed = Database::update('uploads', ['status' => 'assembling'], "id = ? AND status = 'open'", [$id]);
+        $claimed = Database::query(
+            "UPDATE uploads SET status = 'assembling', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'open'",
+            [$id]
+        )->rowCount();
         if ($claimed === 0) {
             throw new UploadException("Fichier « {$upload['original_name']} » déjà en cours de finalisation.", 409);
         }
 
-        // Attend la fin d'une écriture de morceau démarrée avant la réservation
-        $handle = UploadStorage::lock($id);
+        try {
+            // Attend la fin d'une écriture de morceau démarrée avant la réservation
+            $handle = UploadStorage::lock($id);
+        } catch (Throwable $e) {
+            Database::update('uploads', ['status' => 'open'], 'id = ?', [$id]);
+            throw $e;
+        }
         try {
             self::assertComplete($upload);
         } catch (Throwable $e) {

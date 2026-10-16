@@ -60,7 +60,8 @@ class UploadStorage
     /** @return resource */
     public static function lock(string $id)
     {
-        $handle = fopen(self::partPath($id), 'r+');
+        // Fichier absent = upload purgé ou annulé entre-temps : cas prévu, pas un warning
+        $handle = @fopen(self::partPath($id), 'r+');
         if ($handle === false) {
             throw new UploadException('Upload introuvable ou expiré.', 404);
         }
@@ -140,7 +141,8 @@ class UploadStorage
     {
         $ids = [];
         foreach (glob(self::tmpDir() . '/*.part') ?: [] as $path) {
-            if (filemtime($path) < time() - $maxAgeSeconds) {
+            $modifiedAt = @filemtime($path);
+            if ($modifiedAt !== false && $modifiedAt < time() - $maxAgeSeconds) {
                 $ids[] = basename($path, '.part');
             }
         }

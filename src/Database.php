@@ -10,6 +10,7 @@ class Database
     private static ?PDO $instance = null;
 
     private const BUSY_TIMEOUT_MS = 10000;
+    private const SCHEMA_VERSION = 1;
 
     /**
      * Récupère l'instance PDO (singleton)
@@ -54,7 +55,10 @@ class Database
         }
 
         // Hors createTables : une base existante (prod) doit aussi recevoir ces tables
-        self::createUploadTables();
+        if ((int) $db->query('PRAGMA user_version')->fetchColumn() < self::SCHEMA_VERSION) {
+            self::createUploadTables();
+            $db->exec('PRAGMA user_version = ' . self::SCHEMA_VERSION);
+        }
 
         // Sécuriser les permissions du fichier de base (0600 = lecture/écriture propriétaire uniquement)
         if ($isNewDatabase && file_exists(DATABASE_PATH)) {

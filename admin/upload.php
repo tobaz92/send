@@ -147,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <main class="admin-main">
             <h1>Nouveau partage</h1>
 
-            <form id="upload-form" class="upload-form">
+            <form id="upload-form" class="upload-form" data-upload-token="<?= htmlspecialchars(Auth::generateUploadToken()) ?>">
                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
 
                 <!-- Zone de drop -->

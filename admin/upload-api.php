@@ -7,7 +7,7 @@
  * POST /admin/upload/finish  upload_ids[], options   → url, slug, files_count, errors
  * POST /admin/upload/cancel  upload_id               → ok
  *
- * Jeton CSRF dans l'en-tête X-CSRF-Token, vérifié sans rotation.
+ * Jeton CSRF dédié (Auth::generateUploadToken) dans l'en-tête X-CSRF-Token.
  */
 
 declare(strict_types=1);
@@ -141,7 +141,7 @@ try {
         throw new UploadException('Session expirée, reconnectez-vous.', 401);
     }
     uploadApiAssertBodySize();
-    if (!Auth::verifyCsrfTokenKeep((string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''))) {
+    if (!Auth::verifyUploadToken((string) ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? ''))) {
         throw new UploadException('Jeton de sécurité invalide, rechargez la page.', 403);
     }
     // Libère le verrou de session : sinon chaque morceau bloque les autres onglets admin

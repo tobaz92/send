@@ -31,20 +31,19 @@ class File
             throw new Exception("Erreur lors de l'enregistrement du fichier.");
         }
 
-        return self::register($checked, $storedName, $destination, $shareId);
+        chmod($destination, 0640);
+
+        return self::record($shareId, $checked, $storedName);
     }
 
     /**
-     * Enregistre un fichier assemblé sur disque (sous STORAGE_PATH)
+     * Déplace un fichier assemblé, déjà validé, vers FILES_PATH
      *
+     * @return string le nom stocké
      * @throws InvalidArgumentException si le fichier est hors de STORAGE_PATH
-     * @throws Exception si la validation ou le déplacement échoue
      */
-    public static function storeAssembled(
-        string $path,
-        string $originalName,
-        int $shareId,
-    ): int {
+    public static function promoteAssembled(string $path, string $extension): string
+    {
         $realPath = realpath($path);
         $storageRoot = realpath(STORAGE_PATH);
 
@@ -58,30 +57,42 @@ class File
             );
         }
 
-        $checked = FileValidator::validate($realPath, $originalName);
-        $storedName = self::generateStoredName($checked["extension"]);
+        $storedName = self::generateStoredName($extension);
         $destination = FILES_PATH . "/" . $storedName;
 
         if (!rename($realPath, $destination)) {
-            throw new Exception("Erreur lors de l'enregistrement du fichier.");
+            throw new RuntimeException("Déplacement impossible vers {$destination}");
         }
+        chmod($destination, 0640);
 
-        return self::register($checked, $storedName, $destination, $shareId);
+        return $storedName;
     }
 
-    private static function register(
-        array $checked,
-        string $storedName,
-        string $destination,
-        int $shareId,
-    ): int {
-        chmod($destination, 0640);
+    /**
+     * Annule promoteAssembled : remet le fichier à son emplacement d'origine
+     */
+    public static function demote(string $storedName, string $path): void
+    {
+        if (!rename(self::getPath($storedName), $path)) {
+            throw new RuntimeException("Retour impossible de {$storedName} vers {$path}");
+        }
+    }
+
+    /**
+     * Enregistre en base un fichier présent dans FILES_PATH
+     */
+    public static function record(int $shareId, array $checked, string $storedName): int
+    {
+        $size = filesize(self::getPath($storedName));
+        if ($size === false) {
+            throw new RuntimeException("Taille illisible pour {$storedName}");
+        }
 
         return Database::insert("files", [
             "share_id" => $shareId,
             "original_name" => $checked["name"],
             "stored_name" => $storedName,
-            "size" => filesize($destination),
+            "size" => $size,
             "mime_type" => $checked["mime"],
         ]);
     }
