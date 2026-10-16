@@ -4,6 +4,11 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Sourcé hors bash (zsh : BASH_SOURCE vide), REPO_ROOT vaudrait « / » et rsync copierait tout le disque
+if [[ ! -f "$REPO_ROOT/index.php" || ! -f "$REPO_ROOT/tests/lib.sh" ]]; then
+    echo "lib.sh : racine du dépôt introuvable ($REPO_ROOT), lancer les tests avec bash" >&2
+    exit 1
+fi
 TEST_USER="admin"
 TEST_PASS="test-password-$$"
 UPLOAD_MAX="${UPLOAD_MAX:-2M}"
