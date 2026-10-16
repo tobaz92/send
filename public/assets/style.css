@@ -599,25 +599,31 @@ input:focus, textarea:focus, select:focus {
     border-radius: var(--radius);
 }
 
+/* Bandeau en bas de page : dernier élément du flex de .public-page (min-height 100vh),
+   donc collé au bas de l'écran sans jamais recouvrir la liste des fichiers */
 .promo-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+    row-gap: 4px;
     width: 100%;
-    max-width: 480px;
-    margin-top: 16px;
-    padding: 16px;
+    padding: 12px 24px;
     background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    border-top: 1px solid var(--border);
+    font-size: 13px;
 }
 
-.promo-card h1 { font-size: 1rem; margin: 0 0 8px; }
-.promo-card p { margin: 0 0 8px; }
-.promo-card > :last-child { margin-bottom: 0; }
+.promo-card h1 { font-size: 13px; margin: 0; }
+.promo-card p { margin: 0; color: var(--text-muted); }
 .promo-card a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
 .promo-card a:hover { color: var(--primary-hover); }
 
 @media (min-width: 900px) {
     .has-wallpaper .download-container { align-items: flex-start; padding: 48px 64px; }
-    .promo-card { position: fixed; right: 32px; bottom: 32px; width: auto; max-width: 320px; margin: 0; }
+    /* Aligné sur le bord gauche du bloc de téléchargement */
+    .has-wallpaper .public-footer { padding: 16px 0; }
+    .promo-card { padding: 12px 64px; }
 }
 
 .branding-page { max-width: 1400px; }
