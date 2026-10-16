@@ -560,13 +560,28 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Personnalisation : image de fond et encart des pages publiques */
-.page-wallpaper {
+.page-wallpapers {
     position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: #111;
+}
+
+/* La durée doit rester égale à WALLPAPER_FADE_MS (wallpaper-rotator.js) */
+.page-wallpaper {
+    position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -1;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+}
+
+.page-wallpaper.is-visible { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+    .page-wallpaper { transition: none; }
 }
 
 .has-wallpaper { background: #111; }
@@ -582,23 +597,69 @@ input:focus, textarea:focus, select:focus {
     font-size: 14px;
 }
 
-.promo-card p { margin: 0; }
-.promo-card a { display: block; color: var(--text); }
-.promo-card a:hover { text-decoration: none; }
-.promo-host { display: block; margin-top: 4px; font-size: 12px; color: var(--text-muted); }
-.promo-card a:hover .promo-host { color: var(--text); }
+.promo-card h1 { font-size: 1.15rem; margin: 0 0 6px; }
+.promo-card p { margin: 0 0 6px; }
+.promo-card > :last-child { margin-bottom: 0; }
+.promo-card a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+.promo-card a:hover { color: #000; }
 
 @media (min-width: 900px) {
     .has-wallpaper .download-container { align-items: flex-start; padding: 48px 64px; }
     .promo-card { position: fixed; right: 32px; bottom: 32px; max-width: 320px; margin: 0; }
 }
 
-.branding-preview {
-    display: block;
-    max-width: 320px;
-    max-height: 180px;
-    object-fit: cover;
-    border-radius: var(--radius);
+.branding-page { max-width: 1400px; }
+
+.branding-columns { display: grid; gap: 32px; }
+@media (min-width: 1100px) {
+    .branding-columns { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: start; }
+    .branding-preview-panel { position: sticky; top: 16px; }
+}
+
+.wallpaper-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.wallpaper-item {
     border: 1px solid var(--border);
-    margin-bottom: 8px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-alt);
+}
+
+.wallpaper-item img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.wallpaper-remove { display: flex; align-items: center; gap: 6px; padding: 6px 8px; font-size: 12px; cursor: pointer; }
+.wallpaper-remove input { width: auto; }
+.wallpaper-item:has(input:checked) img { opacity: 0.35; }
+
+.editor { border: 1px solid var(--border); border-radius: var(--radius); }
+.editor-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border-bottom: 1px solid var(--border); background: var(--bg-alt); }
+.editor-area { min-height: 120px; padding: 12px; outline: none; }
+.editor-area:focus { box-shadow: inset 0 0 0 1px var(--primary); }
+.editor-area h1 { font-size: 1.25rem; margin-bottom: 6px; }
+.editor-area p { margin-bottom: 6px; }
+.editor-area a { text-decoration: underline; }
+
+.branding-preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.branding-preview-header h3 { margin: 0; }
+
+.preview-frame {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-alt);
+}
+
+.preview-frame iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 0;
+    transform-origin: 0 0;
 }

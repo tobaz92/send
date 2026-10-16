@@ -48,13 +48,15 @@ $routes = [
     'POST /admin/shares-delete' => ['admin/shares-delete.php', 'auth'],
     'GET /admin/branding' => ['admin/branding.php', 'auth'],
     'POST /admin/branding' => ['admin/branding.php', 'auth'],
+    // Pas sous /admin/branding/ : avec MultiViews (OVH), ce chemin serait servi par admin/branding.php
+    'GET /admin/branding-preview' => ['admin/branding-preview.php', 'auth'],
     'GET /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],
     'POST /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],
     'POST /admin/share/([a-zA-Z0-9_-]+)/delete' => ['admin/share-delete.php', 'auth'],
     'POST /admin/share/([a-zA-Z0-9_-]+)/toggle' => ['admin/share-toggle.php', 'auth'],
 
     // Public
-    'GET /branding/wallpaper' => ['public/wallpaper.php'],
+    'GET /branding/wallpaper/([a-f0-9]{32}\.(?:jpg|png|webp))' => ['public/wallpaper.php'],
     'GET /d/([a-zA-Z0-9_-]+)' => ['public/download.php'],
     'POST /d/([a-zA-Z0-9_-]+)' => ['public/download.php'],
     'GET /d/([a-zA-Z0-9_-]+)/file/([0-9]+)' => ['public/file.php'],
