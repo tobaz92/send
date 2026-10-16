@@ -4,6 +4,8 @@
 'use strict';
 
 const CHUNK_MAX_ATTEMPTS = 3;
+// Un morceau de 32 Mio sur une liaison montante lente peut prendre plusieurs minutes
+const REQUEST_TIMEOUT_MS = 15 * 60 * 1000;
 const RETRY_BASE_DELAY_MS = 1000;
 const HTTP_INSUFFICIENT_STORAGE = 507;
 const HTTP_MESSAGES = {
@@ -40,8 +42,8 @@ function parseResponse(status, text) {
         throw new UploadError(HTTP_MESSAGES[status] || fallback, status);
     }
 
-    if (status < 200 || status >= 300 || !payload.success) {
-        throw new UploadError(payload.error || `Échec de l'envoi (HTTP ${status}).`, status);
+    if (status < 200 || status >= 300 || !payload || !payload.success) {
+        throw new UploadError(payload?.error || `Échec de l'envoi (HTTP ${status}).`, status);
     }
     return payload;
 }
@@ -69,6 +71,8 @@ function callApi(url, token, fields, onSent = null) {
         });
         xhr.addEventListener('error', () => reject(new UploadError('Erreur de connexion au serveur.')));
         xhr.addEventListener('abort', () => reject(new UploadError('Envoi interrompu.')));
+        xhr.timeout = REQUEST_TIMEOUT_MS;
+        xhr.addEventListener('timeout', () => reject(new UploadError('Le serveur ne répond plus.')));
         xhr.send(body);
     });
 }
@@ -91,6 +95,9 @@ async function sendFile(file, session, onBytes) {
         ['name', file.name],
         ['size', String(file.size)],
     ]);
+    if (!Number.isInteger(started.chunk_size) || started.chunk_size <= 0) {
+        throw new UploadError('Réponse invalide du serveur (taille de morceau).');
+    }
     session.openIds.push(started.upload_id);
 
     for (let index = 0; index * started.chunk_size < file.size; index++) {

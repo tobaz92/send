@@ -143,7 +143,7 @@ function showResult(els, apiBase, result) {
     els.submitBtn.style.display = 'none';
     els.resultSection.style.display = 'block';
     document.getElementById('share-url').value = result.url;
-    document.getElementById('view-share-link').href = apiBase.replace(/\/upload$/, '/share/') + result.slug;
+    document.getElementById('view-share-link').href = apiBase.replace(/\/upload$/, '/share/') + encodeURIComponent(result.slug);
     if (result.errors && result.errors.length > 0) {
         els.resultSection.querySelector('.result-success').prepend(buildWarning(result.errors));
     }
@@ -173,14 +173,17 @@ async function submitUpload(els, selection, apiBase) {
     const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
 
     setSending(els, selection, true);
+    let result;
     try {
-        const result = await runUpload(files, readShareOptions(els.form), session, trackProgress(els, totalBytes));
-        showResult(els, apiBase, result);
+        result = await runUpload(files, readShareOptions(els.form), session, trackProgress(els, totalBytes));
     } catch (error) {
         setSending(els, selection, false);
         showError(els, error.message);
         console.error('Upload échoué :', error);
+        return;
     }
+    // Hors du try : le partage existe, un incident d'affichage ne doit pas inviter à renvoyer
+    showResult(els, apiBase, result);
 }
 
 function initUploadPage() {
