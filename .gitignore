@@ -51,3 +51,6 @@ error_log
 plan.json
 project-status.json
 security-audit-report.json
+
+# Sauvegardes ftp-sync (dumps de prod, données personnelles)
+/backups/
