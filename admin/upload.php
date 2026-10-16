@@ -13,116 +13,6 @@ if (!Auth::check()) {
     exit;
 }
 
-$csrfToken = Auth::generateCsrfToken();
-$success = false;
-$error = '';
-$shareUrl = '';
-
-// Traitement AJAX de l'upload
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    header('Content-Type: application/json');
-
-    try {
-        // Vérifier CSRF
-        if (!Auth::verifyCsrfToken($_POST['csrf_token'] ?? '')) {
-            throw new Exception('Session expirée.');
-        }
-
-        // Vérifier qu'il y a des fichiers
-        if (empty($_FILES['files'])) {
-            throw new Exception('Aucun fichier sélectionné.');
-        }
-
-        // Créer le partage
-        $slugType = $_POST['slug_type'] ?? 'random';
-        $customSlug = trim($_POST['custom_slug'] ?? '');
-
-        $shareData = [
-            'title' => trim($_POST['title'] ?? ''),
-            'password' => $_POST['password'] ?? '',
-            'slug_type' => $slugType
-        ];
-
-        // Slug personnalisé
-        if ($slugType === 'custom' && !empty($customSlug)) {
-            // Valider le slug custom
-            if (!preg_match('/^[a-zA-Z0-9_-]{3,50}$/', $customSlug)) {
-                throw new Exception('Slug invalide (3-50 caractères alphanumériques, - et _ autorisés).');
-            }
-            if (Share::findBySlug($customSlug)) {
-                throw new Exception('Ce slug est déjà utilisé.');
-            }
-            $shareData['slug'] = $customSlug;
-        }
-
-        $shareId = Share::create($shareData);
-        $share = Share::findById($shareId);
-
-        // Uploader les fichiers
-        $files = $_FILES['files'];
-        $uploadedCount = 0;
-        $errors = [];
-
-        // Restructurer le tableau $_FILES pour les uploads multiples
-        $fileCount = count($files['name']);
-
-        for ($i = 0; $i < $fileCount; $i++) {
-            if ($files['error'][$i] === UPLOAD_ERR_NO_FILE) {
-                continue;
-            }
-
-            $file = [
-                'name' => $files['name'][$i],
-                'type' => $files['type'][$i],
-                'tmp_name' => $files['tmp_name'][$i],
-                'error' => $files['error'][$i],
-                'size' => $files['size'][$i]
-            ];
-
-            try {
-                File::upload($file, $shareId);
-                $uploadedCount++;
-            } catch (Exception $e) {
-                $errors[] = $files['name'][$i] . ': ' . $e->getMessage();
-            }
-        }
-
-        if ($uploadedCount === 0) {
-            // Supprimer le partage vide
-            Share::hardDelete($shareId);
-            throw new Exception('Aucun fichier n\'a pu être uploadé. ' . implode(' ', $errors));
-        }
-
-        // Log
-        Database::insert('audit_logs', [
-            'action' => 'upload',
-            'ip' => Auth::getClientIp(),
-            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null,
-            'details' => json_encode([
-                'share_id' => $shareId,
-                'files_count' => $uploadedCount
-            ])
-        ]);
-
-        echo json_encode([
-            'success' => true,
-            'url' => Share::getPublicUrl($share['slug']),
-            'slug' => $share['slug'],
-            'files_count' => $uploadedCount,
-            'errors' => $errors
-        ]);
-        exit;
-
-    } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode([
-            'success' => false,
-            'error' => $e->getMessage()
-        ]);
-        exit;
-    }
-}
-
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -148,8 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1>Nouveau partage</h1>
 
             <form id="upload-form" class="upload-form" data-upload-token="<?= htmlspecialchars(Auth::generateUploadToken()) ?>">
-                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken) ?>">
-
                 <!-- Zone de drop -->
                 <div id="drop-zone" class="drop-zone">
                     <div class="drop-zone-content">
@@ -215,6 +103,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
+                <div id="upload-error" class="alert alert-error" role="alert" style="display: none;"></div>
+
                 <!-- Progress bar -->
                 <div id="progress-section" class="progress-section" style="display: none;">
                     <div class="progress-bar">
@@ -249,6 +139,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </main>
     </div>
 
-    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/app.js"></script>
+    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/app.js?v=<?= filemtime(ROOT_PATH . '/public/assets/app.js') ?>"></script>
+    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/upload-client.js?v=<?= filemtime(ROOT_PATH . '/public/assets/upload-client.js') ?>"></script>
+    <script src="<?= htmlspecialchars(BASE_URL) ?>/public/assets/upload.js?v=<?= filemtime(ROOT_PATH . '/public/assets/upload.js') ?>"></script>
 </body>
 </html>

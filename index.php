@@ -41,7 +41,6 @@ $routes = [
     'POST /admin/login' => ['admin/login.php'],
     'POST /admin/logout' => ['admin/logout.php', 'auth'],
     'GET /admin/upload' => ['admin/upload.php', 'auth'],
-    'POST /admin/upload' => ['admin/upload.php', 'auth'],
     'POST /admin/upload/(start|chunk|finish|cancel)' => ['admin/upload-api.php', 'auth-json'],
     'GET /admin/shares' => ['admin/shares.php', 'auth'],
     'GET /admin/share/([a-zA-Z0-9_-]+)' => ['admin/share-edit.php', 'auth'],

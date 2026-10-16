@@ -8,35 +8,6 @@ declare(strict_types=1);
 class File
 {
     /**
-     * Upload un fichier
-     *
-     * @throws Exception en cas d'erreur
-     */
-    public static function upload(array $file, int $shareId): int
-    {
-        if ($file["error"] !== UPLOAD_ERR_OK) {
-            throw new Exception(self::getUploadErrorMessage($file["error"]));
-        }
-
-        // Vérifier que c'est bien un fichier uploadé (sécurité)
-        if (!is_uploaded_file($file["tmp_name"])) {
-            throw new Exception("Fichier invalide.");
-        }
-
-        $checked = FileValidator::validate($file["tmp_name"], $file["name"]);
-        $storedName = self::generateStoredName($checked["extension"]);
-        $destination = FILES_PATH . "/" . $storedName;
-
-        if (!move_uploaded_file($file["tmp_name"], $destination)) {
-            throw new Exception("Erreur lors de l'enregistrement du fichier.");
-        }
-
-        chmod($destination, 0640);
-
-        return self::record($shareId, $checked, $storedName);
-    }
-
-    /**
      * Déplace un fichier assemblé, déjà validé, vers FILES_PATH
      *
      * @return string le nom stocké
@@ -193,27 +164,6 @@ class File
         }
 
         return round($size, 2) . " " . $units[$i];
-    }
-
-    /**
-     * Message d'erreur d'upload
-     */
-    private static function getUploadErrorMessage(int $error): string
-    {
-        return match ($error) {
-            UPLOAD_ERR_INI_SIZE => "Le fichier dépasse la limite du serveur.",
-            UPLOAD_ERR_FORM_SIZE
-                => "Le fichier dépasse la limite du formulaire.",
-            UPLOAD_ERR_PARTIAL
-                => 'Le fichier n\'a été que partiellement uploadé.',
-            UPLOAD_ERR_NO_FILE => 'Aucun fichier n\'a été uploadé.',
-            UPLOAD_ERR_NO_TMP_DIR
-                => "Erreur serveur : dossier temporaire manquant.",
-            UPLOAD_ERR_CANT_WRITE
-                => 'Erreur serveur : impossible d\'écrire sur le disque.',
-            UPLOAD_ERR_EXTENSION => "Upload bloqué par une extension PHP.",
-            default => 'Erreur inconnue lors de l\'upload.',
-        };
     }
 
     /**
