@@ -19,6 +19,7 @@ WeTransfer, Smash... t'as pas la main sur les limites, le branding, les CGU. Sen
 - Pause/reprise des partages sans les supprimer
 - Rate limiting sur les downloads et les tentatives de mot de passe
 - Audit log
+- Personnalisation des pages de téléchargement : image de fond et encart texte + lien (admin → Personnalisation)
 
 ## Prérequis
 
@@ -109,6 +110,7 @@ Tests (bash, curl, sqlite3) :
 ```bash
 tests/chunked-upload.sh    # upload découpé de bout en bout (php -S)
 tests/chunked-pentest.sh   # attaques sur l'API d'upload
+tests/branding.sh          # image de fond et encart de la page publique
 tests/proxy-e2e.sh         # Docker : nginx limité à 128 Mio devant Apache + PHP 8.1
 ```
 
@@ -124,6 +126,7 @@ tests/proxy-e2e.sh         # Docker : nginx limité à 128 Mio devant Apache + P
 ├── src/                   # Classes PHP (Auth, Database, File, Share...)
 └── storage/               # Données (non versionné)
     ├── database.sqlite
+    ├── branding/          # Image de fond des pages publiques
     ├── files/
     └── tmp/               # Uploads découpés en cours
 ```
