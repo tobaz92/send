@@ -72,19 +72,23 @@ Tout est dans `config.php`. Les options utiles :
 | Paramètre | Défaut | Description |
 |-----------|--------|-------------|
 | `ALLOWED_EXTENSIONS` | jpg, pdf, zip, mp4... | Extensions acceptées |
-| `MAX_FILE_SIZE` | `0` (limite serveur) | Taille max par fichier en octets |
+| `MAX_FILE_SIZE` | `0` (pas de limite) | Taille max par fichier en octets |
 | `RATE_LIMIT_PASSWORD_ATTEMPTS` | `5` | Tentatives avant blocage |
 | `RATE_LIMIT_PASSWORD_WINDOW` | `900` | Durée du blocage (15 min) |
 | `TRUSTED_PROXY` | `'none'` | `'cloudflare'`, `'proxy'` ou `'none'` |
 | `SESSION_LIFETIME` | `86400` | Durée de session admin (secondes) |
 
-Pour augmenter la limite d'upload sur mutualisé, décommente dans `.htaccess` :
+### Gros fichiers
 
-```apache
-php_value upload_max_filesize 500M
-php_value post_max_size 500M
-php_value max_execution_time 300
-```
+Les fichiers partent en morceaux, un par requête. Chaque requête reste sous
+les limites de l'hébergeur (OVH coupe à 128 Mio devant PHP), quelle que soit
+la taille totale. La taille des morceaux suit la config PHP réelle :
+`min(32 Mio, upload_max_filesize, post_max_size - 64 Kio)`. Rien à régler
+dans `php.ini` ni dans `.htaccess`.
+
+Les morceaux sont écrits dans `storage/tmp/` (fermé par `storage/.htaccess`).
+Un upload abandonné y est purgé au bout de 24 h. Il faut de la place disque
+pour le fichier en cours en plus des fichiers déjà partagés.
 
 ## Déploiement sur mutualisé
 
@@ -100,6 +104,14 @@ php -S localhost:8000
 # Admin : http://localhost:8000/admin
 ```
 
+Tests (bash, curl, sqlite3) :
+
+```bash
+tests/chunked-upload.sh    # upload découpé de bout en bout (php -S)
+tests/chunked-pentest.sh   # attaques sur l'API d'upload
+tests/proxy-e2e.sh         # Docker : nginx limité à 128 Mio devant Apache + PHP 8.1
+```
+
 ## Structure
 
 ```
@@ -112,7 +124,8 @@ php -S localhost:8000
 ├── src/                   # Classes PHP (Auth, Database, File, Share...)
 └── storage/               # Données (non versionné)
     ├── database.sqlite
-    └── files/
+    ├── files/
+    └── tmp/               # Uploads découpés en cours
 ```
 
 ## Sécurité
